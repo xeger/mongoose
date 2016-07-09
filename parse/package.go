@@ -14,8 +14,15 @@ import (
 
 // Package represents a package, which contains types.
 type Package interface {
+	// Absolute path to directory containing package source files.
 	Dir() string
+	// Number of interfaces.
 	Len() int
+	// All names declared in the package statement of any source file in this
+	// package. For valid packages, should only contain or two entries: foo
+	// and/or foo_test.
+	EachName(func(string))
+	// All interfaces declared within this package's source files.
 	EachInterface(func(Interface))
 }
 
@@ -31,6 +38,12 @@ func (lp *loaderPackage) Dir() string {
 
 func (lp *loaderPackage) Len() int {
 	return len(lp.interfaces)
+}
+
+func (lp *loaderPackage) EachName(cb func(name string)) {
+	for _, n := range lp.names {
+		cb(n)
+	}
 }
 
 func (lp *loaderPackage) EachInterface(cb func(Interface)) {

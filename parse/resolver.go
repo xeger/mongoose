@@ -16,6 +16,11 @@ type Resolver interface {
 	// a prefix that is unique to the package. The "local" package name must be
 	// given, and if it is the same as the imported package, the prefix is omitted.
 	Resolve(local, pathAndType string) string
+	// EachImport enumerates the distinct package names that have been resolved
+	// and the import name that was chosen for each. It can be used to generate
+	// import statements. The first param of the callback is a package path,
+	// the second param is the import name chosen for that path.
+	EachImport(func(string, string))
 }
 
 // NewResolver creates a simple resolver that keeps state with a pair of maps.
@@ -56,6 +61,12 @@ func (m mapResolver) Resolve(local, pathAndType string) string {
 	m.pkgNick[pkg] = nick
 	m.nickPkg[nick] = pkg
 	return fmt.Sprintf("%s.%s", nick, typ)
+}
+
+func (m mapResolver) EachImport(cb func(string, string)) {
+	for pkg, nick := range m.pkgNick {
+		cb(pkg, nick)
+	}
 }
 
 // Test whether a nickname is taken or reserved.

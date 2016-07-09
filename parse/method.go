@@ -32,8 +32,14 @@ func (lm *loaderMethod) Name() string {
 }
 
 func (lm *loaderMethod) EachParam(cb func(string, Type)) {
+	namer := make(namer)
+	pos := 0
 	for name, typ := range lm.params {
+		if name == "" {
+			name = namer.Name(pos, typ)
+		}
 		cb(name, typ)
+		pos++
 	}
 }
 
