@@ -3,9 +3,9 @@ package parse
 import (
 	"fmt"
 	"go/ast"
+	"go/build"
 	"go/importer"
 	"go/types"
-	"io/ioutil"
 	"log"
 	"path/filepath"
 
@@ -72,7 +72,7 @@ func NewPackage(path string) (Package, error) {
 		return nil, err
 	}
 
-	files, err := ioutil.ReadDir(path)
+	buildPkg, err := build.Default.Import(".", path, build.AllowBinary|build.ImportComment)
 	if err != nil {
 		return nil, err
 	}
@@ -89,13 +89,8 @@ func NewPackage(path string) (Package, error) {
 	}
 	conf.TypeChecker.Importer = importer.Default()
 
-	for _, fi := range files {
-		if filepath.Ext(fi.Name()) != ".go" {
-			continue
-		}
-
-		fpath := filepath.Join(path, fi.Name())
-		f, errp := conf.ParseFile(fpath, nil)
+	for _, fn := range buildPkg.GoFiles {
+		f, errp := conf.ParseFile(filepath.Join(path, fn), nil)
 
 		if errp != nil {
 			return nil, errp
