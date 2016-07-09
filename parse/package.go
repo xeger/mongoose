@@ -19,21 +19,30 @@ type Package interface {
 }
 
 type loaderPackage struct {
-	interfaces map[string]*types.Interface
+	interfaces []Interface
 }
 
-func (lp loaderPackage) Size() int {
+func (lp *loaderPackage) Size() int {
 	return len(lp.interfaces)
 }
 
-func (lp loaderPackage) EachInterface(cb func(Interface)) {
-	for n, i := range lp.interfaces {
-		cb(loaderInterface{n,i})
+func (lp *loaderPackage) EachInterface(cb func(Interface)) {
+	for _, intf := range lp.interfaces {
+		cb(intf)
 	}
 }
 
-func (lp loaderPackage) String() string {
+func (lp *loaderPackage) String() string {
 	return fmt.Sprintf("Package(size=%d)", lp.Size())
+}
+
+func (lp *loaderPackage) finalize(interfaces map[string]*types.Interface) {
+	lp.interfaces = make([]Interface, 0, len(interfaces))
+	for name, intf := range interfaces {
+		li := &loaderInterface{}
+		li.finalize(name, intf)
+		lp.interfaces = append(lp.interfaces, li)
+	}
 }
 
 // NewPackage loads *.go from a given directory and returns type information about the package defined in it.
@@ -80,7 +89,7 @@ func NewPackage(path string) (Package, error) {
 		return nil, err
 	}
 
-	lp := &loaderPackage{interfaces: map[string]*types.Interface{}}
+	interfaces := map[string]*types.Interface{}
 	for _, pinfo := range prog.Created {
 		scope := pinfo.Pkg.Scope()
 		for _, name := range scope.Names() {
@@ -98,8 +107,11 @@ func NewPackage(path string) (Package, error) {
 				continue
 			}
 			iface = iface.Complete()
-			lp.interfaces[name] = iface
+			interfaces[name] = iface
 		}
 	}
+
+	lp := &loaderPackage{}
+	lp.finalize(interfaces)
 	return lp, nil
 }

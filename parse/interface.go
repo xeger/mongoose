@@ -13,25 +13,34 @@ type Interface interface {
 }
 
 type loaderInterface struct {
-	name string
-	intf *types.Interface
+	name    string
+	methods []Method
 }
 
-func (li loaderInterface) Size() int {
-	return li.intf.NumMethods()
+func (li *loaderInterface) Size() int {
+	return len(li.methods)
 }
 
-func (li loaderInterface) Name() string {
-		return li.name
+func (li *loaderInterface) Name() string {
+	return li.name
 }
 
-func (li loaderInterface) EachMethod(cb func(Method)) {
-	for i := 0; i < li.intf.NumMethods(); i++ {
-		meth := loaderMethod{li.intf.Method(i)}
+func (li *loaderInterface) EachMethod(cb func(Method)) {
+	for _, meth := range li.methods {
 		cb(meth)
 	}
 }
 
-func (li loaderInterface) String() string {
+func (li *loaderInterface) String() string {
 	return fmt.Sprintf("Interface(size=%d)", li.Size())
+}
+
+func (li *loaderInterface) finalize(name string, intf *types.Interface) {
+	li.name = name
+	li.methods = make([]Method, intf.NumMethods())
+	for i := 0; i < len(li.methods); i++ {
+		meth := &loaderMethod{}
+		meth.finalize(intf.Method(i))
+		li.methods[i] = meth
+	}
 }
