@@ -1,0 +1,12 @@
+hash: 686a9059ef4dbbdab30b3ab82ffa260555bb20241adffb9bd87beb560f46a439
+updated: 2016-07-08T22:55:03.883324958-07:00
+imports:
+- name: github.com/acsellers/inflections
+  version: cb98bfe9e3ee28e8649778f5fbb2e95f54f71b39
+- name: golang.org/x/tools
+  version: 35c6e68a1a5ffc3e3afef71586710e9b0515582d
+  subpackages:
+  - go/loader
+  - go/ast/astutil
+  - go/buildutil
+devImports: []

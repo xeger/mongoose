@@ -1,1 +1,4 @@
-- package: golang.org/x/tools/go/loader
+package: github.com/xeger/mongoose
+import:
+  - package: github.com/acsellers/inflections
+  - package: golang.org/x/tools/go/loader
