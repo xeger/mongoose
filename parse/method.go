@@ -4,52 +4,21 @@ import (
 	"go/types"
 )
 
-// Method represents a method definition of an interface or other type.
-type Method interface {
-	Arity() int
-	Len() int
-	Name() string
-	EachParam(func(string, Type))
-	EachResult(func(Type))
+type Method struct {
+	Name    string
+	Params  map[string]Type
+	Results []Type
 }
 
-type loaderMethod struct {
-	name    string
-	params  map[string]Type
-	results []Type
+func (lm *Method) Arity() int {
+	return len(lm.Params)
 }
 
-func (lm *loaderMethod) Arity() int {
-	return len(lm.params)
+func (lm *Method) Len() int {
+	return len(lm.Results)
 }
 
-func (lm *loaderMethod) Len() int {
-	return len(lm.results)
-}
-
-func (lm *loaderMethod) Name() string {
-	return lm.name
-}
-
-func (lm *loaderMethod) EachParam(cb func(string, Type)) {
-	namer := make(namer)
-	pos := 0
-	for name, typ := range lm.params {
-		if name == "" {
-			name = namer.Name(pos, typ)
-		}
-		cb(name, typ)
-		pos++
-	}
-}
-
-func (lm *loaderMethod) EachResult(cb func(Type)) {
-	for _, typ := range lm.results {
-		cb(typ)
-	}
-}
-
-func (lm *loaderMethod) finalize(meth *types.Func) {
+func (lm *Method) finalize(meth *types.Func) {
 	sig, ok := meth.Type().(*types.Signature)
 	if !ok {
 		panic("what the heck?")
@@ -58,17 +27,26 @@ func (lm *loaderMethod) finalize(meth *types.Func) {
 		panic("can't handle variadic interface methods!!!")
 	}
 
-	lm.name = meth.Name()
+	lm.Name = meth.Name()
 	params := sig.Params()
-	lm.params = map[string]Type{}
+	namer := make(namer)
+
+	lm.Params = map[string]Type{}
+	pos := 0
 	for i := 0; i < params.Len(); i++ {
 		p := params.At(i)
-		lm.params[p.Name()] = loaderType{p.Type()}
+		name := p.Name()
+		typ := Type{p.Type()}
+		if name == "" {
+			name = namer.Name(pos, typ)
+		}
+		lm.Params[name] = typ
+		pos++
 	}
 	results := sig.Results()
-	lm.results = make([]Type, results.Len())
+	lm.Results = make([]Type, results.Len())
 	for i := 0; i < results.Len(); i++ {
 		p := results.At(i)
-		lm.results[i] = loaderType{p.Type()}
+		lm.Results[i] = Type{p.Type()}
 	}
 }

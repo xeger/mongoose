@@ -12,61 +12,31 @@ import (
 	"golang.org/x/tools/go/loader"
 )
 
-// Package represents a package, which contains types.
-type Package interface {
-	// Absolute path to directory containing package source files.
-	Dir() string
-	// Number of interfaces.
-	Len() int
-	// All names declared in the package statement of any source file in this
-	// package. For valid packages, should only contain or two entries: foo
-	// and/or foo_test.
-	EachName(func(string))
-	// All interfaces declared within this package's source files.
-	EachInterface(func(Interface))
+type Package struct {
+	Dir        string
+	Names      []string
+	Interfaces []Interface
 }
 
-type loaderPackage struct {
-	dir        string
-	names      []string
-	interfaces []Interface
+func (lp *Package) Len() int {
+	return len(lp.Interfaces)
 }
 
-func (lp *loaderPackage) Dir() string {
-	return lp.dir
-}
-
-func (lp *loaderPackage) Len() int {
-	return len(lp.interfaces)
-}
-
-func (lp *loaderPackage) EachName(cb func(name string)) {
-	for _, n := range lp.names {
-		cb(n)
-	}
-}
-
-func (lp *loaderPackage) EachInterface(cb func(Interface)) {
-	for _, intf := range lp.interfaces {
-		cb(intf)
-	}
-}
-
-func (lp *loaderPackage) String() string {
+func (lp *Package) String() string {
 	return fmt.Sprintf("Package(size=%d)", lp.Len())
 }
 
-func (lp *loaderPackage) finalize(interfaces map[string]*types.Interface) {
-	lp.interfaces = make([]Interface, 0, len(interfaces))
-	for name, intf := range interfaces {
-		li := &loaderInterface{}
-		li.finalize(name, intf)
-		lp.interfaces = append(lp.interfaces, li)
+func (lp *Package) finalize(interfaces map[string]*types.Interface) {
+	lp.Interfaces = make([]Interface, 0, len(interfaces))
+	for name, gointf := range interfaces {
+		intf := Interface{}
+		intf.finalize(name, gointf)
+		lp.Interfaces = append(lp.Interfaces, intf)
 	}
 }
 
 // NewPackage loads *.go from a given directory and returns type information about the package defined in it.
-func NewPackage(path string) (Package, error) {
+func NewPackage(path string) (*Package, error) {
 	path, err := filepath.Abs(path)
 	if err != nil {
 		return nil, err
@@ -134,9 +104,9 @@ func NewPackage(path string) (Package, error) {
 		pkgList = append(pkgList, k)
 	}
 
-	lp := &loaderPackage{}
-	lp.dir = path
-	lp.names = pkgList
+	lp := &Package{}
+	lp.Dir = path
+	lp.Names = pkgList
 	lp.finalize(interfaces)
 	return lp, nil
 }

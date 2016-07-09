@@ -19,6 +19,6 @@ type Placer interface {
 type PackagePlacer struct{}
 
 func (PackagePlacer) Place(pkg parse.Package, intf parse.Interface) string {
-	path := pkg.Dir()
-	return filepath.Join(path, fmt.Sprintf("mock_%s.go", inflections.Underscore(intf.Name())))
+	path := pkg.Dir
+	return filepath.Join(path, fmt.Sprintf("mock_%s.go", inflections.Underscore(intf.Name)))
 }

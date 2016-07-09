@@ -17,12 +17,8 @@ func main() {
 	}
 
 	// Proof of concept: render stubs to stdout
-	var intfs []parse.Interface
-	pkg.EachInterface(func(intf parse.Interface) {
-		intfs = append(intfs, intf)
-	})
 	rend := gen.StubRenderer{}
-	source, err := rend.Render(pkg, intfs)
+	source, err := rend.Render(pkg, pkg.Interfaces)
 	if err != nil {
 		fmt.Println("// Code generation failure:")
 		fmt.Println("//   ", err)

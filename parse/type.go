@@ -8,49 +8,22 @@ import (
 	"strings"
 )
 
-// Type represents a type, either built-in or user-defined.
-type Type interface {
-	// Fully-qualified name of this type. Consists of the absolute path to
-	// the type's package on disk, a dot, and the type's name within that
-	// package.
-	// Example: /usr/local/src/awesome.Widget
-	Name() string
-
-	// BareName provides the type's name without any package prefix.
-	BareName() string
-
-	// Name that can be used to refer to this type in Go source code. ShortName
-	// is subjective and depends on the context in which it is used, hence the
-	// need for some method parameters to provide that context.
-	//
-	// The first parameter is the package statement from the "local" source,
-	// used to check whether the type is declared in the same package as the
-	// source.
-	//
-	// The second parameter is a Resolver that can be used to map this type's
-	// package to an import name within the source.
-	ShortName(string, Resolver) string
-
-	// Zero value that can be used to create literals of this type in Go source
-	// code.
-	ZeroValue(string, Resolver) string
-}
-
-type loaderType struct {
+// Type represents a Go data type.
+type Type struct {
 	typ types.Type
 }
 
-func (lt loaderType) Name() string {
+func (lt Type) Name() string {
 	return lt.typ.String()
 }
 
-func (lt loaderType) BareName() string {
+func (lt Type) BareName() string {
 	pkgWithName := filepath.Base(lt.Name())
 	parts := strings.SplitN(pkgWithName, ".", 2)
 	return parts[len(parts)-1]
 }
 
-func (lt loaderType) ShortName(local string, r Resolver) string {
+func (lt Type) ShortName(local string, r Resolver) string {
 	_, b := lt.typ.(*types.Basic)
 	_, n := lt.typ.(*types.Named)
 
@@ -67,7 +40,7 @@ func (lt loaderType) ShortName(local string, r Resolver) string {
 
 var zeroConverts = regexp.MustCompile("(byte|u?int|float|rune)[0-9]*")
 
-func (lt loaderType) ZeroValue(local string, r Resolver) string {
+func (lt Type) ZeroValue(local string, r Resolver) string {
 	basic, b := lt.typ.(*types.Basic)
 	named, n := lt.typ.(*types.Named)
 
@@ -98,7 +71,7 @@ func (lt loaderType) ZeroValue(local string, r Resolver) string {
 	panic(fmt.Sprintf("unhandled ZeroValue for type %s", typ))
 }
 
-func (lt loaderType) zeroBasic(basic *types.Basic) string {
+func (lt Type) zeroBasic(basic *types.Basic) string {
 	typ := basic.String()
 	if typ == "string" {
 		return `""`

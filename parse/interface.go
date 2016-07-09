@@ -5,42 +5,26 @@ import (
 	"go/types"
 )
 
-// Interface represents an interface
-type Interface interface {
-	Len() int
-	Name() string
-	EachMethod(func(Method))
+// Interface represents an interface defined in a Package.
+type Interface struct {
+	Name    string
+	Methods []Method
 }
 
-type loaderInterface struct {
-	name    string
-	methods []Method
+func (li *Interface) Len() int {
+	return len(li.Methods)
 }
 
-func (li *loaderInterface) Len() int {
-	return len(li.methods)
-}
-
-func (li *loaderInterface) Name() string {
-	return li.name
-}
-
-func (li *loaderInterface) EachMethod(cb func(Method)) {
-	for _, meth := range li.methods {
-		cb(meth)
-	}
-}
-
-func (li *loaderInterface) String() string {
+func (li *Interface) String() string {
 	return fmt.Sprintf("Interface(size=%d)", li.Len())
 }
 
-func (li *loaderInterface) finalize(name string, intf *types.Interface) {
-	li.name = name
-	li.methods = make([]Method, intf.NumMethods())
-	for i := 0; i < len(li.methods); i++ {
-		meth := &loaderMethod{}
+func (li *Interface) finalize(name string, intf *types.Interface) {
+	li.Name = name
+	li.Methods = make([]Method, intf.NumMethods())
+	for i := 0; i < len(li.Methods); i++ {
+		meth := Method{}
 		meth.finalize(intf.Method(i))
-		li.methods[i] = meth
+		li.Methods[i] = meth
 	}
 }
