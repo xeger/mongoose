@@ -6,7 +6,8 @@ import (
 
 // Method represents a method definition of an interface or other type.
 type Method interface {
-	Size() int
+	Arity() int
+	Len() int
 	Name() string
 	EachParam(func(string, Type))
 	EachResult(func(Type))
@@ -18,8 +19,12 @@ type loaderMethod struct {
 	results []Type
 }
 
-func (lm *loaderMethod) Size() int {
-	return len(lm.params) + len(lm.results)
+func (lm *loaderMethod) Arity() int {
+	return len(lm.params)
+}
+
+func (lm *loaderMethod) Len() int {
+	return len(lm.results)
 }
 
 func (lm *loaderMethod) Name() string {

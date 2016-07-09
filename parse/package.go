@@ -14,15 +14,22 @@ import (
 
 // Package represents a package, which contains types.
 type Package interface {
-	Size() int
+	Dir() string
+	Len() int
 	EachInterface(func(Interface))
 }
 
 type loaderPackage struct {
+	dir        string
+	names      []string
 	interfaces []Interface
 }
 
-func (lp *loaderPackage) Size() int {
+func (lp *loaderPackage) Dir() string {
+	return lp.dir
+}
+
+func (lp *loaderPackage) Len() int {
 	return len(lp.interfaces)
 }
 
@@ -33,7 +40,7 @@ func (lp *loaderPackage) EachInterface(cb func(Interface)) {
 }
 
 func (lp *loaderPackage) String() string {
-	return fmt.Sprintf("Package(size=%d)", lp.Size())
+	return fmt.Sprintf("Package(size=%d)", lp.Len())
 }
 
 func (lp *loaderPackage) finalize(interfaces map[string]*types.Interface) {
@@ -58,6 +65,7 @@ func NewPackage(path string) (Package, error) {
 	}
 
 	var astFiles []*ast.File
+	pkgNames := map[string]bool{}
 	var conf loader.Config
 
 	conf.TypeCheckFuncBodies = func(_ string) bool { return false }
@@ -75,11 +83,13 @@ func NewPackage(path string) (Package, error) {
 
 		fpath := filepath.Join(path, fi.Name())
 		f, errp := conf.ParseFile(fpath, nil)
+
 		if errp != nil {
 			return nil, errp
 		}
 
 		astFiles = append(astFiles, f)
+		pkgNames[f.Name.Name] = true
 	}
 
 	conf.CreateFromFiles(path, astFiles...)
@@ -111,7 +121,14 @@ func NewPackage(path string) (Package, error) {
 		}
 	}
 
+	pkgList := make([]string, 0, len(pkgNames))
+	for k := range pkgNames {
+		pkgList = append(pkgList, k)
+	}
+
 	lp := &loaderPackage{}
+	lp.dir = path
+	lp.names = pkgList
 	lp.finalize(interfaces)
 	return lp, nil
 }

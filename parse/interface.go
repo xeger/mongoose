@@ -7,7 +7,7 @@ import (
 
 // Interface represents an interface
 type Interface interface {
-	Size() int
+	Len() int
 	Name() string
 	EachMethod(func(Method))
 }
@@ -17,7 +17,7 @@ type loaderInterface struct {
 	methods []Method
 }
 
-func (li *loaderInterface) Size() int {
+func (li *loaderInterface) Len() int {
 	return len(li.methods)
 }
 
@@ -32,7 +32,7 @@ func (li *loaderInterface) EachMethod(cb func(Method)) {
 }
 
 func (li *loaderInterface) String() string {
-	return fmt.Sprintf("Interface(size=%d)", li.Size())
+	return fmt.Sprintf("Interface(size=%d)", li.Len())
 }
 
 func (li *loaderInterface) finalize(name string, intf *types.Interface) {
