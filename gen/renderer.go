@@ -11,15 +11,17 @@ import (
 // Renderer generates the complete contents of a Go source file, including
 // imports, that defines mocks and/or stubs for a number of interfaces.
 type Renderer interface {
-	Render(*parse.Package, []parse.Interface) (string, error)
+	Render(*parse.Package, []*parse.Interface) (string, error)
 }
 
-// BasicRenderer uses sprintf and stuff to generate a behavior-less stub
+// StubRenderer uses sprintf and stuff to generate a behavior-less stub
 // for every mocked interface. It's not very useful and serves mostly as a
 // simple proof-of-concept.
 type StubRenderer struct{}
 
-func (StubRenderer) Render(pkg *parse.Package, intfs []parse.Interface) (string, error) {
+// Render generates some Go source code for test doubles of a
+// number of interfaces.
+func (StubRenderer) Render(pkg *parse.Package, intfs []*parse.Interface) (string, error) {
 	pkgName := filepath.Base(pkg.Dir)
 	r := parse.NewResolver()
 
