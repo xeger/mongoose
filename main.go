@@ -18,21 +18,16 @@ func main() {
 
 	// Proof of concept: render stubs to stdout
 	placer := gen.PackagePlacer{}
-	rend := gen.StubRenderer{}
+	rend := gen.NewTestifyRenderer()
 	writer := gen.StdoutWriter{}
 
-	placed := map[*parse.Interface]string{}
+	placed := map[string][]parse.Interface{}
 	for _, intf := range pkg.Interfaces {
-		placed[&intf] = placer.Place(pkg.Dir, &intf)
+		place := placer.Place(pkg.Dir, &intf)
+		placed[place] = append(placed[place], intf)
 	}
 
-	byFile := map[string][]*parse.Interface{}
-	for intf, path := range placed {
-		list := byFile[path]
-		byFile[path] = append(list, intf)
-	}
-
-	for path, intfs := range byFile {
+	for path, intfs := range placed {
 		source, err := rend.Render(pkg, intfs)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Code generation failure:", err)

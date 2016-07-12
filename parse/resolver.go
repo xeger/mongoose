@@ -16,11 +16,11 @@ type Resolver interface {
 	// a prefix that is unique to the package. The "local" package name must be
 	// given, and if it is the same as the imported package, the prefix is omitted.
 	Resolve(local, pathAndType string) string
-	// EachImport enumerates the distinct package names that have been resolved
-	// and the import name that was chosen for each. It can be used to generate
-	// import statements. The first param of the callback is a package path,
-	// the second param is the import name chosen for that path.
-	EachImport(func(string, string))
+	// Import adds a package to the resolver's dictionary with a specified name.
+	// Returns false if the nickname is already taken.
+	Import(nick, pkg string) bool
+	// Imports maps nicknames to package paths
+	Imports() map[string]string
 }
 
 // NewResolver creates a simple resolver that keeps state with a pair of maps.
@@ -58,15 +58,21 @@ func (m mapResolver) Resolve(local, pathAndType string) string {
 		// deal with collisions
 		nick = fmt.Sprintf("%s%d", orig, i)
 	}
-	m.pkgNick[pkg] = nick
-	m.nickPkg[nick] = pkg
+	m.Import(nick, pkg)
 	return fmt.Sprintf("%s.%s", nick, typ)
 }
 
-func (m mapResolver) EachImport(cb func(string, string)) {
-	for pkg, nick := range m.pkgNick {
-		cb(pkg, nick)
+func (m mapResolver) Import(nick, pkg string) bool {
+	if m.hasNick(nick) {
+		return false
 	}
+	m.pkgNick[pkg] = nick
+	m.nickPkg[nick] = pkg
+	return true
+}
+
+func (m mapResolver) Imports() map[string]string {
+	return m.nickPkg
 }
 
 // Test whether a nickname is taken or reserved.

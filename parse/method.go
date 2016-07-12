@@ -6,16 +6,16 @@ import (
 
 type Method struct {
 	Name    string
-	Params  map[string]Type
-	Results []Type
+	Params  Params
+	Results Results
 }
 
 func (lm *Method) Arity() int {
-	return len(lm.Params)
+	return lm.Params.Len()
 }
 
 func (lm *Method) Len() int {
-	return len(lm.Results)
+	return lm.Results.Len()
 }
 
 func (lm *Method) finalize(meth *types.Func) {
@@ -23,15 +23,12 @@ func (lm *Method) finalize(meth *types.Func) {
 	if !ok {
 		panic("what the heck?")
 	}
-	if sig.Variadic() {
-		panic("can't handle variadic interface methods!!!")
-	}
 
 	lm.Name = meth.Name()
 	params := sig.Params()
 	namer := make(namer)
 
-	lm.Params = map[string]Type{}
+	lm.Params = Params{data: make([]Param, 0, params.Len()), variadic: sig.Variadic()}
 	pos := 0
 	for i := 0; i < params.Len(); i++ {
 		p := params.At(i)
@@ -40,7 +37,7 @@ func (lm *Method) finalize(meth *types.Func) {
 		if name == "" {
 			name = namer.Name(pos, typ)
 		}
-		lm.Params[name] = typ
+		lm.Params.data = append(lm.Params.data, Param{Name: name, Type: typ})
 		pos++
 	}
 	results := sig.Results()

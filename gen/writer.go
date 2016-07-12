@@ -2,7 +2,6 @@ package gen
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 )
 
@@ -16,6 +15,5 @@ func (StdoutWriter) Write(path, source string) {
 	fmt.Println("////////////////////////////////////////////////////////////")
 	fmt.Println("//", filepath.Base(path))
 	fmt.Println("////////////////////////////////////////////////////////////")
-	fmt.Println()
-	os.Stdout.WriteString(source)
+	fmt.Println(source)
 }

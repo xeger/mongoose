@@ -25,15 +25,23 @@ func (lt Type) BareName() string {
 
 func (lt Type) ShortName(local string, r Resolver) string {
 	_, b := lt.typ.(*types.Basic)
+	slt, sl := lt.typ.(*types.Slice)
+	mpt, mp := lt.typ.(*types.Map)
 	_, n := lt.typ.(*types.Named)
 
 	typ := lt.typ.String()
 
 	if b {
-		// basic types: nothing to do
 		return typ
 	} else if n {
 		return r.Resolve(local, typ)
+	} else if sl {
+		elem := Type{typ: slt.Elem()}.ShortName(local, r)
+		return fmt.Sprintf("[]%s", elem)
+	} else if mp {
+		key := Type{typ: mpt.Key()}.ShortName(local, r)
+		elem := Type{typ: mpt.Elem()}.ShortName(local, r)
+		return fmt.Sprintf("map[%s]%s", key, elem)
 	}
 	panic(fmt.Sprintf("unhandled ShortName for type %s", typ))
 }
