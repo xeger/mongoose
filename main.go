@@ -19,7 +19,8 @@ func main() {
 	// Proof of concept: render stubs to stdout
 	placer := gen.PackagePlacer{}
 	rend := gen.NewTestifyRenderer()
-	writer := gen.StdoutWriter{}
+	//writer := gen.StdoutWriter{}
+	writer := gen.FileWriter{}
 
 	placed := map[string][]parse.Interface{}
 	for _, intf := range pkg.Interfaces {
