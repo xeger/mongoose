@@ -3,7 +3,6 @@ package parse
 import (
 	"fmt"
 	"go/types"
-	"path/filepath"
 	"regexp"
 	"strings"
 )
@@ -13,29 +12,59 @@ type Type struct {
 	typ types.Type
 }
 
-func (lt Type) Name() string {
+// String returns the unmodified name of the type. It's only useful for basic
+// types and compositions thereof; for named types, use BareName or ShortName
+// instead.
+func (lt Type) String() string {
 	return lt.typ.String()
 }
 
+// BareName returns the name of ultimate, underlying basic or named type, free
+// from any pointer/slice/map decorators or package names. For maps, it returns
+// the underlying key type instead of the value type.
 func (lt Type) BareName() string {
-	pkgWithName := filepath.Base(lt.Name())
-	parts := strings.SplitN(pkgWithName, ".", 2)
-	return parts[len(parts)-1]
+	t := lt.typ
+	for done := false; !done; {
+		switch t.(type) {
+		case *types.Basic, *types.Named:
+			done = true
+		case *types.Map:
+			m := t.(*types.Map)
+			t = m.Key()
+		default:
+			u := t.Underlying()
+			if u != t && u != nil {
+				t = u
+			} else {
+				done = true
+			}
+		}
+	}
+	name := t.String()
+	if strings.Index(name, ".") > 0 {
+		split := strings.Split(name, ".")
+		return split[len(split)-1]
+	}
+	return name
 }
 
+// ShortName returns the type's name as usable from within a Go source file.
+// You must pass a Resolver to handle package import names, as well as the
+// package name declared in the source file in which this type name will appear.
 func (lt Type) ShortName(local string, r Resolver) string {
 	_, b := lt.typ.(*types.Basic)
+	it, i := lt.typ.(*types.Interface)
+	_, n := lt.typ.(*types.Named)
 	slt, sl := lt.typ.(*types.Slice)
 	mpt, mp := lt.typ.(*types.Map)
 	ptt, pt := lt.typ.(*types.Pointer)
-	_, n := lt.typ.(*types.Named)
-
-	typ := lt.typ.String()
 
 	if b {
-		return typ
+		return lt.typ.String()
+	} else if i {
+		return it.String()
 	} else if n {
-		return r.Resolve(local, typ)
+		return r.Resolve(local, lt.typ.String())
 	} else if pt {
 		elem := Type{typ: ptt.Elem()}.ShortName(local, r)
 		return fmt.Sprintf("*%s", elem)
@@ -47,7 +76,7 @@ func (lt Type) ShortName(local string, r Resolver) string {
 		elem := Type{typ: mpt.Elem()}.ShortName(local, r)
 		return fmt.Sprintf("map[%s]%s", key, elem)
 	}
-	panic(fmt.Sprintf("unhandled ShortName for type %s", typ))
+	panic(fmt.Sprintf("unhandled ShortName for type %s (%T)", lt.typ.String(), lt.typ))
 }
 
 var zeroConverts = regexp.MustCompile("(byte|u?int|float|rune)[0-9]*")

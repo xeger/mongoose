@@ -20,15 +20,15 @@ var testifyItem = `
 }
 
 {{$locl := .Package.Name}}{{$res := .Resolver}}{{range .Interface.Methods}}
-func (m *{{$typename}}) {{.Name}}{{.Params.Tuple $locl $res}}{{$rtuple := .Results.Tuple $locl $res}}{{if gt .Results.Len 0}} {{$rtuple}}{{end}} {
-	{{$pnames := .Params.NameList}}{{$ptypes := (.Params.TypeList $locl $res)}}{{if gt .Results.Len 0}}ret := {{end}}m.Called({{.Params.NameList}})
+func (_m *{{$typename}}) {{.Name}}{{.Params.Tuple $locl $res}}{{$rtuple := .Results.Tuple $locl $res}}{{if gt .Results.Len 0}} {{$rtuple}}{{end}} {
+	{{$pnames := .Params.NameList}}{{$ptypes := (.Params.TypeList $locl $res)}}{{if gt .Results.Len 0}}ret := {{end}}_m.Called({{.Params.NameList}})
 	{{range $idx, $typ := .Results}}
 	var r{{$idx}} {{$typ.ShortName $locl $res}}
 
-	if r{{$idx}}f, ok := ret.Get({{$idx}}).(func({{$ptypes}}) {{$rtuple}}); ok {
+	if r{{$idx}}f, ok := ret.Get({{$idx}}).(func({{$ptypes}}) {{$typ.ShortName $locl $res}}); ok {
 			r{{$idx}} = r{{$idx}}f({{$pnames}})
 	} else {
-			r{{$idx}} = ret.Get({{$idx}}).({{$typ.ShortName $locl $res}})
+			{{if eq $typ.String "error"}}r{{$idx}} = ret.Error({{$idx}}){{else}}r{{$idx}} = ret.Get({{$idx}}).({{$typ.ShortName $locl $res}}){{end}}
 	}{{end}}
 
 	return {{.Results.NameList}}

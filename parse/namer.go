@@ -6,12 +6,16 @@ import (
 	"strings"
 )
 
-// Namer provides suitable unique names for method parameters or results.
+// Namer provides suitable unique names for variables (e.g. method parameters
+// that are unnamed in their interface's definition.) It remembers all of the
+// names it has assigned and will never assign a duplicate.
 type namer map[string]int
 
 var nonUpper = regexp.MustCompile("[^A-Z]")
 var nonAlpha = regexp.MustCompile("[^A-Za-z]")
 
+// Name chooses a name based on a variable's type name and its "position" (i.e.
+// in the list of parameters or results).
 func (n namer) Name(pos int, typ Type) string {
 	name := strings.ToLower(nonUpper.ReplaceAllString(typ.BareName(), ""))
 	if name == "" {

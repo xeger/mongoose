@@ -58,10 +58,8 @@ func (m mapResolver) Resolve(local, typePath string) string {
 	}
 
 	// Deal with collisions by appending successively larger integers
-	orig := natural
-	i := 2
-	for {
-		nick := fmt.Sprintf("%s%d", orig, i)
+	for i := 2; ; i++ {
+		nick := fmt.Sprintf("%s%d", natural, i)
 		if m.Import(nick, impPath) {
 			return fmt.Sprintf("%s.%s", nick, typ)
 		}
@@ -95,7 +93,13 @@ func (m mapResolver) hasNick(nick string) bool {
 //    - stdlib types (typePath is relative, not absolute)
 //    - multiple GOPATH entries
 //    - vendored packages
+//    - pointer-to and slice-of decorators on typenames
 func (m mapResolver) chew(name string) (string, string) {
+	gunk := strings.LastIndexAny(name, "[]*")
+	//	name = name[gunk+1:]
+	if gunk > 0 {
+		panic("wtf, gunk in typePath?!?")
+	}
 	lastDot := strings.LastIndex(name, ".")
 	if lastDot < 0 {
 		return "", name

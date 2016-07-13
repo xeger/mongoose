@@ -14,15 +14,19 @@ type Renderer interface {
 	Render(*parse.Package, []parse.Interface) (string, error)
 }
 
-func resolve(r parse.Resolver, pkgName string, intfs []parse.Interface) {
+// Resolve all types in a list of interfaces. Useful to generate all of the
+// imports we'll require before we actually generating any code.
+func resolve(local string, r parse.Resolver, intfs []parse.Interface) {
 	for _, intf := range intfs {
 		for _, meth := range intf.Methods {
 			for i := 0; i < meth.Params.Len(); i++ {
-				p := meth.Params.At(i)
-				r.Resolve(pkgName, p.Type.Name())
+				meth.Params.At(i).Type.ShortName(local, r)
+			}
+			if v := meth.Params.Variadic(); v != nil {
+				v.Type.ShortName(local, r)
 			}
 			for _, typ := range meth.Results {
-				r.Resolve(pkgName, typ.Name())
+				typ.ShortName(local, r)
 			}
 		}
 	}
@@ -50,9 +54,9 @@ type itemContext struct {
 
 func (tr *templateRenderer) Render(pkg *parse.Package, intfs []parse.Interface) (string, error) {
 	out := bytes.Buffer{}
-	pkgName := filepath.Base(pkg.Dir)
+	local := filepath.Base(pkg.Dir)
 
-	resolve(tr.Resolver, pkgName, intfs)
+	resolve(local, tr.Resolver, intfs)
 
 	if tr.Header != nil {
 		err := tr.Header.Execute(&out, headerContext{Resolver: tr.Resolver, Package: pkg})
