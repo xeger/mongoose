@@ -7,19 +7,26 @@ import (
 	"strings"
 )
 
-// Resolver is a stateful component that assigns import names to packages whose
-// types appear in type definitions that we process. It remembers any name
-// that is assigned to a package and is capable of stripping off path prefixes
-// and suffixes.
+// Resolver assigns unique file-local import names ("nicknames") to packages
+// that will be imported and used in a Go source file. It works with several
+// string representations of packages; to avoid confusion, please keep in mind
+// the following terminology:
+//    nick, local: one-word, file-local nicknames e.g. "os", "mypkg"
+//    typePath: absolute type paths e.g. "/usr/local/src/foo.Widget", "sort.Interface"
+//    impPath: relative import paths e.g. "net/url", "github.com/xeger/bar"
 type Resolver interface {
-	// Resolve transforms an absolute path.typename into an imported type with
-	// a prefix that is unique to the package. The "local" package name must be
-	// given, and if it is the same as the imported package, the prefix is omitted.
-	Resolve(local, pathAndType string) string
-	// Import adds a package to the resolver's dictionary with a specified name.
-	// Returns false if the nickname is already taken.
-	Import(nick, pkg string) bool
-	// Imports maps nicknames to package paths
+	// Resolve transforms an absolute path-and-typename into an imported type with
+	// a package-unique nickname. The "local" package name must be given, and if
+	// it is the same as the type's package's assigned nickname, the prefix is
+	// omitted.
+	Resolve(local, typePath string) string
+
+	// Import idempotently adds a package to the resolver's dictionary with a
+	// chosen nickname. Returns true if addition was succesful, or if the package
+	// is already registered with that name.
+	Import(nick, impPath string) bool
+
+	// Imports provides a map of nickname-to-package.
 	Imports() map[string]string
 }
 
@@ -28,46 +35,47 @@ func NewResolver() Resolver {
 	return &mapResolver{map[string]string{}, map[string]string{}}
 }
 
-// MapResolver is a simplistic resolver.
 type mapResolver struct {
 	pkgNick map[string]string // path --> nickname
 	nickPkg map[string]string // nickname --> path
 }
 
-// Resolve maps "/GOPATH/foo.com/bar.Type" --> "bar.Type"
-func (m mapResolver) Resolve(local, pathAndType string) string {
-	absolute, typ := m.chew(pathAndType)
-	if absolute == "" {
+func (m mapResolver) Resolve(local, typePath string) string {
+	impPath, typ := m.chew(typePath)
+
+	if impPath == "" {
 		return typ // basic type; nothing to do!
 	}
 
-	natural := filepath.Base(absolute)
+	natural := filepath.Base(impPath)
 	if natural == local {
 		return typ // type exists locally; no dot prefix
 	}
-	nick, ok := m.pkgNick[absolute]
-	if ok {
-		// nickname already registered for this pkg
-		return fmt.Sprintf("%s.%s", nick, typ)
+
+	// First try to use the natural nick for the pkg
+	if m.Import(natural, impPath) {
+		return fmt.Sprintf("%s.%s", natural, typ)
 	}
 
-	// allocate a nickname for the new pkg
-	nick = natural
+	// Deal with collisions by appending successively larger integers
 	orig := natural
-	for i := 2; m.hasNick(nick); i++ {
-		// deal with collisions
-		nick = fmt.Sprintf("%s%d", orig, i)
+	i := 2
+	for {
+		nick := fmt.Sprintf("%s%d", orig, i)
+		if m.Import(nick, impPath) {
+			return fmt.Sprintf("%s.%s", nick, typ)
+		}
 	}
-	m.Import(nick, absolute)
-	return fmt.Sprintf("%s.%s", nick, typ)
 }
 
-func (m mapResolver) Import(nick, pkg string) bool {
-	if m.hasNick(nick) {
-		return false
+func (m mapResolver) Import(nick, impPath string) bool {
+	oldpkg, exists := m.nickPkg[nick]
+	if exists {
+		return (oldpkg == impPath)
 	}
-	m.pkgNick[pkg] = nick
-	m.nickPkg[nick] = pkg
+
+	m.pkgNick[impPath] = nick
+	m.nickPkg[nick] = impPath
 	return true
 }
 
@@ -81,8 +89,12 @@ func (m mapResolver) hasNick(nick string) bool {
 	return ok
 }
 
-// Turn an absolute path+type into a relative path+type name. Account for
-// multiple gopath entries and vendoring.
+// Extract an impPath and typeName from an absolute typePath. Account for all of
+// the following complexities:
+//    - basic types (no typePath)
+//    - stdlib types (typePath is relative, not absolute)
+//    - multiple GOPATH entries
+//    - vendored packages
 func (m mapResolver) chew(name string) (string, string) {
 	lastDot := strings.LastIndex(name, ".")
 	if lastDot < 0 {
