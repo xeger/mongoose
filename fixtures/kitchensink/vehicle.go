@@ -18,7 +18,7 @@ type Vehicle interface {
 	Attach(wheels ...Wheel)
 	Wheels() []Wheel
 	Drive(dir string, dist float32) url.URL
-	Refuel(FuelCan)
+	Refuel(FuelCan) *FuelCan
 	EnterLeave(map[int]string, bool)
 	Occupants() map[int]string
 }

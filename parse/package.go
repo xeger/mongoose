@@ -13,9 +13,17 @@ import (
 )
 
 type Package struct {
-	Dir        string
-	Names      []string
+	// Absolute path to this package
+	Dir string
+	// All package names declared by any source file (usually just 1 or 2!)
+	Names []string
+	// All interfaces defined in any source file
 	Interfaces []Interface
+}
+
+// "Natural" name of this package (i.e. base name of path it's located in).
+func (lp *Package) Name() string {
+	return filepath.Base(lp.Dir)
 }
 
 func (lp *Package) Len() int {

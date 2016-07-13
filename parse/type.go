@@ -27,6 +27,7 @@ func (lt Type) ShortName(local string, r Resolver) string {
 	_, b := lt.typ.(*types.Basic)
 	slt, sl := lt.typ.(*types.Slice)
 	mpt, mp := lt.typ.(*types.Map)
+	ptt, pt := lt.typ.(*types.Pointer)
 	_, n := lt.typ.(*types.Named)
 
 	typ := lt.typ.String()
@@ -35,6 +36,9 @@ func (lt Type) ShortName(local string, r Resolver) string {
 		return typ
 	} else if n {
 		return r.Resolve(local, typ)
+	} else if pt {
+		elem := Type{typ: ptt.Elem()}.ShortName(local, r)
+		return fmt.Sprintf("*%s", elem)
 	} else if sl {
 		elem := Type{typ: slt.Elem()}.ShortName(local, r)
 		return fmt.Sprintf("[]%s", elem)

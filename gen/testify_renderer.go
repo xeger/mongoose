@@ -7,6 +7,8 @@ import (
 )
 
 var testifyHeader = `
+package {{.Package.Name}}
+
 import ({{range $nick, $pkg := .Resolver.Imports}}
 	{{$nick}} "{{$pkg}}"{{end}}
 )
@@ -17,18 +19,17 @@ var testifyItem = `
 	mock.Mock
 }
 
-{{$locl := .Package.Dir}}{{$res := .Resolver}}{{range .Interface.Methods}}
+{{$locl := .Package.Name}}{{$res := .Resolver}}{{range .Interface.Methods}}
 func (m *{{$typename}}) {{.Name}}{{.Params.Tuple $locl $res}}{{$rtuple := .Results.Tuple $locl $res}}{{if gt .Results.Len 0}} {{$rtuple}}{{end}} {
 	{{$pnames := .Params.NameList}}{{$ptypes := (.Params.TypeList $locl $res)}}ret := m.Called({{.Params.NameList}})
 	{{range $idx, $typ := .Results}}
 	var r{{$idx}} {{$typ.ShortName $locl $res}}
 
 	if r{{$idx}}f, ok := ret.Get({{$idx}}).(func({{$ptypes}}) {{$rtuple}}); ok {
-					r{{$idx}} = r{{$idx}}f({{$pnames}})
+			r{{$idx}} = r{{$idx}}f({{$pnames}})
 	} else {
-					r{{$idx}} = ret.Get({{$idx}}).({{$typ.ShortName $locl $res}})
-	}
-	{{end}}
+			r{{$idx}} = ret.Get({{$idx}}).({{$typ.ShortName $locl $res}})
+	}{{end}}
 
 	return {{.Results.NameList}}
 }
