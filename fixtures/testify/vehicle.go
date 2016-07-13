@@ -1,4 +1,4 @@
-package kitchensink
+package testify
 
 import "net/url"
 

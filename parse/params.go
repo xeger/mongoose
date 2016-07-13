@@ -15,6 +15,7 @@ type Params struct {
 	variadic bool
 }
 
+// Formal method declaration i.e. (alice string, bob int)
 func (p *Params) Tuple(local string, resolver Resolver) string {
 	buf := bytes.NewBufferString("(")
 	for i := 0; i < p.Len(); i++ {
@@ -37,6 +38,7 @@ func (p *Params) Tuple(local string, resolver Resolver) string {
 	return buf.String()
 }
 
+// List of parameter names, including variadic (without trailing dots)
 func (p *Params) NameList() string {
 	buf := bytes.Buffer{}
 
@@ -53,7 +55,7 @@ func (p *Params) NameList() string {
 		}
 		v := p.Variadic()
 		buf.WriteString(v.Name)
-		buf.WriteString("...")
+		//buf.WriteString("...")
 	}
 	return buf.String()
 }

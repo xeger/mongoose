@@ -10,8 +10,8 @@ var testifyHeader = `
 package {{.Package.Name}}
 
 import ({{range $nick, $pkg := .Resolver.Imports}}
-	{{$nick}} "{{$pkg}}"{{end}}
-)
+	{{$nick}} "{{$pkg}}"
+{{end}})
 `
 
 var testifyItem = `
@@ -21,7 +21,7 @@ var testifyItem = `
 
 {{$locl := .Package.Name}}{{$res := .Resolver}}{{range .Interface.Methods}}
 func (m *{{$typename}}) {{.Name}}{{.Params.Tuple $locl $res}}{{$rtuple := .Results.Tuple $locl $res}}{{if gt .Results.Len 0}} {{$rtuple}}{{end}} {
-	{{$pnames := .Params.NameList}}{{$ptypes := (.Params.TypeList $locl $res)}}ret := m.Called({{.Params.NameList}})
+	{{$pnames := .Params.NameList}}{{$ptypes := (.Params.TypeList $locl $res)}}{{if gt .Results.Len 0}}ret := {{end}}m.Called({{.Params.NameList}})
 	{{range $idx, $typ := .Results}}
 	var r{{$idx}} {{$typ.ShortName $locl $res}}
 
@@ -35,11 +35,6 @@ func (m *{{$typename}}) {{.Name}}{{.Params.Tuple $locl $res}}{{$rtuple := .Resul
 }
 {{end}}
 `
-
-// {{$pnames := .Params.NameList}}{{$ptypes := .Params.TypeList $local $res}}
-// {{range $idx, $typ := .Results}}
-// hi hi hi
-// {{end}}
 
 // NewTestifyRenderer creates a code generator for github.com/stretchr/testify.
 // The mock type embeds tesify/mock.Mock and can be programmed using the

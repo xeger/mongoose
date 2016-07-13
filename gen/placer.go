@@ -9,16 +9,22 @@ import (
 )
 
 // Placer decides where to write the source code for an interface's mock.
-// TODO ---- stop passing a package in; just pass a dir in which the package's source is defined ----
 type Placer interface {
 	Place(path string, intf *parse.Interface) string
 }
 
-// PakagePlacer puts each interface's mock in its own file located in the same
-// package as the interface.
-// Example: the mock of foo.Xyz is placed in foo/mock_xyz.go
-type PackagePlacer struct{}
+// PackagePlacer puts mocks into the same package as their interfaces, either in
+// a single file (if FilePerInterface is false) or one mock per file (if true).
+//
+// Without FilePerInterface: the mock of foo.Bar is placed in foo/mocks.go
+// With FilePerInterface: the mock of foo.Bar is placed in foo/mock_bar.go
+type PackagePlacer struct {
+	FilePerInterface bool
+}
 
-func (PackagePlacer) Place(path string, intf *parse.Interface) string {
-	return filepath.Join(path, fmt.Sprintf("mock_%s.go", inflections.Underscore(intf.Name)))
+func (pp PackagePlacer) Place(path string, intf *parse.Interface) string {
+	if pp.FilePerInterface {
+		return filepath.Join(path, fmt.Sprintf("mock_%s.go", inflections.Underscore(intf.Name)))
+	}
+	return filepath.Join(path, "mocks.go")
 }

@@ -34,31 +34,31 @@ type mapResolver struct {
 	nickPkg map[string]string // nickname --> path
 }
 
-// Resolve maps "/GOPATH/foo.com/bar.Type" --> ("foo.com/bar", "Type")
+// Resolve maps "/GOPATH/foo.com/bar.Type" --> "bar.Type"
 func (m mapResolver) Resolve(local, pathAndType string) string {
 	absolute, typ := m.chew(pathAndType)
 	if absolute == "" {
 		return typ // basic type; nothing to do!
 	}
 
-	pkg := filepath.Base(absolute)
-	if pkg == local {
+	natural := filepath.Base(absolute)
+	if natural == local {
 		return typ // type exists locally; no dot prefix
 	}
-	nick, ok := m.pkgNick[pkg]
+	nick, ok := m.pkgNick[absolute]
 	if ok {
 		// nickname already registered for this pkg
 		return fmt.Sprintf("%s.%s", nick, typ)
 	}
 
 	// allocate a nickname for the new pkg
-	nick = filepath.Base(pkg)
-	orig := nick
+	nick = natural
+	orig := natural
 	for i := 2; m.hasNick(nick); i++ {
 		// deal with collisions
 		nick = fmt.Sprintf("%s%d", orig, i)
 	}
-	m.Import(nick, pkg)
+	m.Import(nick, absolute)
 	return fmt.Sprintf("%s.%s", nick, typ)
 }
 

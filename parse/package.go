@@ -68,7 +68,8 @@ func NewPackage(path string) (*Package, error) {
 	conf.TypeChecker.Importer = importer.Default()
 
 	for _, fn := range buildPkg.GoFiles {
-		f, errp := conf.ParseFile(filepath.Join(path, fn), nil)
+		fp := filepath.Join(path, fn)
+		f, errp := conf.ParseFile(fp, nil)
 
 		if errp != nil {
 			return nil, errp
