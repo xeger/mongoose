@@ -3,7 +3,7 @@ package testify_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/xeger/mongoose/fixtures/testify"
+	"github.com/xeger/mongoose/test/testify"
 
 	"testing"
 )
@@ -20,7 +20,7 @@ var _ = Describe("testify dialect", func() {
 	})
 })
 
-func TestKitchensink(t *testing.T) {
+func TestTestify(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Testify Suite")
 }

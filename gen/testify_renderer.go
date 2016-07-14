@@ -6,15 +6,7 @@ import (
 	"github.com/xeger/mongoose/parse"
 )
 
-var testifyHeader = `
-package {{.Package.Name}}
-
-import ({{range $nick, $pkg := .Resolver.Imports}}
-	{{$nick}} "{{$pkg}}"
-{{end}})
-`
-
-var testifyItem = `
+const testifyItem = `
 {{$typename := .Interface.Name | printf "Mock%s" }}type {{$typename}} struct {
 	mock.Mock
 }
@@ -45,7 +37,7 @@ func NewTestifyRenderer() Renderer {
 	tr := &templateRenderer{}
 	tr.Resolver = r
 	tr.Header = template.New("testifyHeader")
-	tr.Header.Parse(testifyHeader)
+	tr.Header.Parse(templateHeader)
 	tr.Item = template.New("testifyItem")
 	tr.Item.Parse(testifyItem)
 	return tr

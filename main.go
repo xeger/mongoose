@@ -10,8 +10,12 @@ import (
 	"github.com/xeger/mongoose/parse"
 )
 
-var mockPackage = flag.String("mock", "testify", "framework: testify,...")
+var mockPackage = flag.String("mock", "mongoose", "framework: testify,...")
 var mockOutput = flag.String("out", ".", "dir/subdir for mock files (- for stdout)")
+
+func mongoose() bool {
+	return strings.Index(*mockPackage, "mongoose") >= 0
+}
 
 func testify() bool {
 	return strings.Index(*mockPackage, "testify") >= 0
@@ -29,7 +33,9 @@ func writer() gen.Writer {
 }
 
 func renderer() gen.Renderer {
-	if testify() {
+	if mongoose() {
+		return gen.NewRenderer()
+	} else if testify() {
 		return gen.NewTestifyRenderer()
 	}
 	panic("not implemented")
@@ -41,7 +47,7 @@ func main() {
 	placer := placer()
 	writer := writer()
 
-	pkg, err := parse.NewPackage(os.Args[1])
+	pkg, err := parse.NewPackage(flag.Arg(0))
 	if err != nil {
 		fmt.Println("Parse failure:", err)
 		os.Exit(1)

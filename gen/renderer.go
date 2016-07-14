@@ -52,6 +52,14 @@ type itemContext struct {
 	Interface *parse.Interface
 }
 
+const templateHeader = `
+// Generated with github.com/xeger/mongoose - do not edit by hand
+package {{.Package.Name}}
+
+import ({{range $nick, $pkg := .Resolver.Imports}}
+	{{$nick}} "{{$pkg}}"{{end}})
+`
+
 func (tr *templateRenderer) Render(pkg *parse.Package, intfs []parse.Interface) (string, error) {
 	out := bytes.Buffer{}
 	local := filepath.Base(pkg.Dir)

@@ -1,2 +1,2 @@
-fixtures/**/mock*.go
+test/**/mock*.go
 vendor/*
