@@ -9,12 +9,16 @@ import (
 const mongooseItem = `
 {{$typename := .Interface.Name | printf "Mock%s" }}type {{$typename}} struct {
 	Mock mock.Mock
+	Stub bool
 }
 
 {{$locl := .Package.Name}}{{$res := .Resolver}}{{range .Interface.Methods}}
 func (m {{$typename}}) {{.Name}}{{.Params.Tuple $locl $res}}{{$rtuple := .Results.Tuple $locl $res}}{{if gt .Results.Len 0}} {{$rtuple}}{{end}} {
 	{{$pnames := .Params.NameList}}{{$ptypes := (.Params.TypeList $locl $res)}}ret := mock.Ø(m.Mock,"{{.Name}}",{{.Params.NameList}})
 	if ret == nil {
+		if m.Stub {
+			return{{if gt .Results.Len 0}} {{.Results.ZeroTuple $locl $res}}{{end}}
+		}
 		panic("mock: unexpected call to {{.Name}}")
 	}
 	{{range $idx, $typ := .Results}}

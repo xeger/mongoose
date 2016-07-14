@@ -14,13 +14,11 @@ type Mock map[string][]allowed
 // that return nothing still return an empty slice.
 //
 // In contrast, if this method returns nil then the method call was NOT
-// matched and the caller should behave accordingly.
-//
-// If this method receives a nil mock, it panics because Allow() should have
-// already initialized the mock or panicked with its own error message.
+// matched and the caller should behave accordingly, i.e. panic unless some
+// stubbed default behavior is appropriate.
 func Ø(mock Mock, method string, params ...interface{}) []interface{} {
 	if mock == nil {
-		panic("mock.Ø: cannot delegate behavior to a nil Mock; initialize it before calling")
+		return nil
 	}
 	calls := mock[method]
 

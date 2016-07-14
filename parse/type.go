@@ -81,32 +81,29 @@ func (lt Type) ShortName(local string, r Resolver) string {
 
 var zeroConverts = regexp.MustCompile("(byte|u?int|float|rune)[0-9]*")
 
-func (lt Type) ZeroValue(local string, r Resolver) string {
-	basic, b := lt.typ.(*types.Basic)
-	named, n := lt.typ.(*types.Named)
+const zeroNil = "nil"
 
+func (lt Type) ZeroValue(local string, r Resolver) string {
 	typ := lt.typ.String()
 
-	if b {
+	if basic, b := lt.typ.(*types.Basic); b {
 		return lt.zeroBasic(basic)
-	} else if n {
+	} else if named, n := lt.typ.(*types.Named); n {
 		under := named.Underlying()
-		// It's a named type; check underlying type.
-		_, i := under.(*types.Interface)
-		_, s := under.(*types.Struct)
-		basic, b = under.(*types.Basic)
-
-		if i {
-			// nil interface value
-			return "nil"
-		} else if s {
-			// zero-valued struct literal
+		if _, s := under.(*types.Struct); s {
 			return fmt.Sprintf("%s{}", lt.ShortName(local, r))
-		} else if b {
-			// conversion of underlying basic zero
-			return fmt.Sprintf("%s(%s)", lt.ShortName(local, r), lt.zeroBasic(basic))
+		} else {
+			underZero := Type{under}.ZeroValue(local, r)
+			return fmt.Sprintf("%s(%s)", lt.ShortName(local, r), underZero)
 		}
-		panic(fmt.Sprintf("unhandled ZeroValue for type %s", typ))
+	} else if _, s := lt.typ.(*types.Slice); s {
+		return zeroNil
+	} else if _, m := lt.typ.(*types.Map); m {
+		return zeroNil
+	} else if _, m := lt.typ.(*types.Interface); m {
+		return zeroNil
+	} else if _, m := lt.typ.(*types.Pointer); m {
+		return zeroNil
 	}
 
 	panic(fmt.Sprintf("unhandled ZeroValue for type %s", typ))

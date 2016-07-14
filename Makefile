@@ -1,7 +1,7 @@
-SOURCES=$(shell git ls-files . gen parse)
-.PHONY: test-unit
+SOURCES=$(shell git ls-files gen mock parse)
+.PHONY: clean test test-unit test-integration
 
-test: test-unit test-integration
+test: $(SOURCES)
 
 test-integration: test/mongoose test/testify
 

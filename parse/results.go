@@ -25,9 +25,27 @@ func (r Results) Tuple(local string, resolver Resolver) string {
 	return buf.String()
 }
 
+func (r Results) ZeroTuple(local string, resolver Resolver) string {
+	buf := bytes.Buffer{}
+	if r.Len() > 1 {
+		buf.WriteString("(")
+	}
+	for _, typ := range r {
+		if buf.Len() > 1 {
+			buf.WriteRune(',')
+		}
+		buf.WriteString(typ.ZeroValue(local, resolver))
+	}
+	if r.Len() > 1 {
+		buf.WriteString(")")
+	}
+
+	return buf.String()
+}
+
 func (r Results) NameList() string {
 	buf := bytes.Buffer{}
-	for i, _ := range r {
+	for i := range r {
 		if buf.Len() > 0 {
 			buf.WriteRune(',')
 		}
