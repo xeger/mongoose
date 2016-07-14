@@ -1,30 +1,47 @@
 package mongoose_test
 
 import (
+	"net/url"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/xeger/mongoose/mock"
+	"github.com/xeger/mongoose/test/mongoose"
 )
 
 var _ = Describe("mongoose dialect", func() {
-	It("has an RSpec-like DSL", func() {
-		Allow(Mock{}).ToReceive("Foo", 2)
+	var v mongoose.Vehicle
+	var w mongoose.Wheel
+
+	URL, err := url.Parse("http://null-island.com")
+	if err != nil {
+		panic("bad text fixture")
+	}
+
+	BeforeEach(func() {
+		v = &mongoose.MockVehicle{}
+		w = &mongoose.MockWheel{}
+		Â(v).On("Attach").With([]mongoose.Wheel{w})
+		Â(v).On("Drive").With("north", 42.0).Return(*URL)
+		Â(w).On("Diameter").Panic("big wheel keep on turnin'")
 	})
 
-	It("has a gomega-like DSL", func() {
-		Â(Mock{}).On("Foo", 1)
+	It("matches calls", func() {
+		Expect(v.Drive("north", 42.0)).To(Equal(*URL))
+		Expect(func() {
+			w.Diameter()
+		}).To(Panic())
 	})
 
-	It("generates code", func() {
-		v := &mongoose.MockVehicle{}
-		w := &mongoose.MockWheel{}
+	It("matches basic-type params using equivalence", func() {
+		Expect(v.Drive("north", 42)).To(Equal(*URL))
+	})
 
-		v.On("Attach", []mongoose.Wheel{w})
-		w.On("Diameter").Return(17.0)
-
-		v.Attach(w)
+	It("panics on unmatched calls", func() {
+		Expect(func() {
+			v.Drive("southeast", 12)
+		}).To(Panic())
 	})
 })
 

@@ -1,6 +1,12 @@
 SOURCES=$(shell git ls-files . gen parse)
+.PHONY: test-unit
 
-test: test/mongoose test/testify
+test: test-unit test-integration
+
+test-integration: test/mongoose test/testify
+
+test-unit:
+	ginkgo -r -skipPackage test
 
 test/mongoose: $(SOURCES)
 	go run main.go test/mongoose
