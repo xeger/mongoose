@@ -2,16 +2,6 @@ package fixtures
 
 import "net/url"
 
-type FuelCan interface {
-	Qty() float32
-	Capacity() float32
-	Fill(Vehicle) Vehicle
-}
-
-type Wheel interface {
-	Diameter() float32
-}
-
 // Vehicle can take you places!
 type Vehicle interface {
 	Range() int
