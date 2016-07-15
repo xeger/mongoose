@@ -3,17 +3,18 @@ package testify_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/xeger/mongoose/test/testify"
+
+	"github.com/xeger/mongoose/test/fixtures"
 
 	"testing"
 )
 
 var _ = Describe("testify dialect", func() {
 	It("generates code", func() {
-		v := &testify.MockVehicle{}
-		w := &testify.MockWheel{}
+		v := &fixtures.MockVehicle{}
+		w := &fixtures.MockWheel{}
 
-		v.On("Attach", []testify.Wheel{w})
+		v.On("Attach", []fixtures.Wheel{w})
 		w.On("Diameter").Return(17.0)
 
 		v.Attach(w)

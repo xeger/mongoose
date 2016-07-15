@@ -7,13 +7,13 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/xeger/mongoose/mock"
-	"github.com/xeger/mongoose/test/mongoose"
+	"github.com/xeger/mongoose/test/fixtures"
 )
 
 var _ = Describe("mongoose dialect", func() {
 	Context("mocking", func() {
-		var v mongoose.Vehicle
-		var w mongoose.Wheel
+		var v fixtures.Vehicle
+		var w fixtures.Wheel
 
 		URL, err := url.Parse("http://null-island.com")
 		if err != nil {
@@ -21,42 +21,42 @@ var _ = Describe("mongoose dialect", func() {
 		}
 
 		BeforeEach(func() {
-			v = &mongoose.MockVehicle{}
-			w = &mongoose.MockWheel{}
-			Â(v).On("Attach").With([]mongoose.Wheel{w})
+			v = &fixtures.MockVehicle{}
+			w = &fixtures.MockWheel{}
+			Â(v).On("Attach").With([]fixtures.Wheel{w})
 			Â(v).On("Drive").With("north", 42.0).Return(*URL)
 			Â(w).On("Diameter").Panic("big wheel keep on turnin'")
 		})
 
 		It("matches calls", func() {
-			Expect(v.Drive("north", 42.0)).To(Equal(*URL))
-			Expect(func() {
+			Ω(v.Drive("north", 42.0)).Should(Equal(*URL))
+			Ω(func() {
 				w.Diameter()
-			}).To(Panic())
+			}).Should(Panic())
 		})
 
 		It("matches basic-type params using equivalence", func() {
-			Expect(v.Drive("north", 42)).To(Equal(*URL))
+			Ω(v.Drive("north", 42)).Should(Equal(*URL))
 		})
 
 		It("panics on unmatched calls", func() {
-			Expect(func() {
+			Ω(func() {
 				v.Drive("southeast", 12)
-			}).To(Panic())
+			}).Should(Panic())
 		})
 	})
 
 	Context("stubbing", func() {
 		It("allows stubbing", func() {
-			v := mongoose.MockVehicle{Stub: true}
-			w := mongoose.MockWheel{Stub: true}
-			Expect(v.Range()).To(Equal(0))
+			v := fixtures.MockVehicle{Stub: true}
+			w := fixtures.MockWheel{Stub: true}
+			Ω(v.Range()).Should(Equal(0))
 			v.Attach()
-			Expect(v.Wheels()).To(BeNil())
-			Expect(v.Drive("east", -5)).To(BeEquivalentTo(url.URL{}))
-			Expect(v.Refuel(&mongoose.MockFuelCan{Stub: true})).To(BeNil())
-			Expect(v.Occupants()).To(BeNil())
-			Expect(w.Diameter()).To(BeEquivalentTo(0.0))
+			Ω(v.Wheels()).Should(BeNil())
+			Ω(v.Drive("east", -5)).Should(BeEquivalentTo(url.URL{}))
+			Ω(v.Refuel(&fixtures.MockFuelCan{Stub: true})).Should(BeNil())
+			Ω(v.Occupants()).Should(BeNil())
+			Ω(w.Diameter()).Should(BeEquivalentTo(0.0))
 		})
 	})
 })
