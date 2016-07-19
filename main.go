@@ -10,11 +10,11 @@ import (
 	"github.com/xeger/mongoose/parse"
 )
 
-var mockPackage = flag.String("mock", "mongoose", "framework: testify,...")
+var mockPackage = flag.String("mock", "gomuti", "framework: testify,...")
 var mockOutput = flag.String("out", ".", "dir/subdir for mock files (- for stdout)")
 
-func mongoose() bool {
-	return strings.Index(*mockPackage, "mongoose") >= 0
+func gomuti() bool {
+	return strings.Index(*mockPackage, "gomuti") >= 0
 }
 
 func testify() bool {
@@ -33,8 +33,8 @@ func writer() gen.Writer {
 }
 
 func renderer() gen.Renderer {
-	if mongoose() {
-		return gen.NewRenderer()
+	if gomuti() {
+		return gen.NewGomutiRenderer()
 	} else if testify() {
 		return gen.NewTestifyRenderer()
 	}

@@ -1,21 +1,21 @@
-SOURCES=$(shell git ls-files gen mock parse)
+SOURCES=$(shell git ls-files . gen parse)
 .PHONY: clean test test-unit test-integration
 
 test: test-unit test-integration
 
-test-integration: test/mongoose test/testify
+test-integration: test/gomuti test/testify
 
 test-unit:
 	ginkgo -r -skipPackage test
 
-test/mongoose: clean $(SOURCES)
-	rm -f test/fixtures/mock*.go
-	go run main.go test/fixtures
-	cd test/mongoose && ginkgo
+test/gomuti: $(SOURCES)
+	make clean
+	go run main.go -mock gomuti test/fixtures
+	cd test/gomuti && ginkgo
 
-test/testify: clean $(SOURCES)
-	rm -f test/fixtures/mock*.go
-	go run main.go --mock=testify test/fixtures
+test/testify: $(SOURCES)
+	make clean
+	go run main.go -mock testify test/fixtures
 	cd test/testify && ginkgo
 
 clean:

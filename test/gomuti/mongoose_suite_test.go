@@ -1,4 +1,4 @@
-package mongoose_test
+package gomuti_test
 
 import (
 	"net/url"
@@ -6,11 +6,11 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/xeger/mongoose/mock"
+	. "github.com/xeger/gomuti"
 	"github.com/xeger/mongoose/test/fixtures"
 )
 
-var _ = Describe("mongoose dialect", func() {
+var _ = Describe("gomuti dialect", func() {
 	Context("mocking", func() {
 		var v fixtures.Vehicle
 		var w fixtures.Wheel
@@ -23,9 +23,9 @@ var _ = Describe("mongoose dialect", func() {
 		BeforeEach(func() {
 			v = &fixtures.MockVehicle{}
 			w = &fixtures.MockWheel{}
-			Â(v).On("Attach").With([]fixtures.Wheel{w})
-			Â(v).On("Drive").With("north", 42.0).Return(*URL)
-			Â(w).On("Diameter").Panic("big wheel keep on turnin'")
+			Â(v).Call("Attach").With([]fixtures.Wheel{w})
+			Â(v).Call("Drive").With("north", 42.0).Return(*URL)
+			Â(w).Call("Diameter").Panic("big wheel keep on turnin'")
 		})
 
 		It("matches calls", func() {
