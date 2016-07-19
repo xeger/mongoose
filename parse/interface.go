@@ -11,20 +11,20 @@ type Interface struct {
 	Methods []Method
 }
 
-func (li *Interface) Len() int {
-	return len(li.Methods)
+func (intf *Interface) Len() int {
+	return len(intf.Methods)
 }
 
-func (li *Interface) String() string {
-	return fmt.Sprintf("Interface(size=%d)", li.Len())
+func (intf *Interface) String() string {
+	return fmt.Sprintf("type %s interface {%v}", intf.Name, intf.Methods)
 }
 
-func (li *Interface) finalize(name string, intf *types.Interface) {
-	li.Name = name
-	li.Methods = make([]Method, intf.NumMethods())
-	for i := 0; i < len(li.Methods); i++ {
+func (intf *Interface) finalize(name string, actual *types.Interface) {
+	intf.Name = name
+	intf.Methods = make([]Method, actual.NumMethods())
+	for i := 0; i < len(intf.Methods); i++ {
 		meth := Method{}
-		meth.finalize(intf.Method(i))
-		li.Methods[i] = meth
+		meth.finalize(actual.Method(i))
+		intf.Methods[i] = meth
 	}
 }

@@ -10,25 +10,29 @@ type Method struct {
 	Results Results
 }
 
-func (lm *Method) Arity() int {
-	return lm.Params.Len()
+func (meth *Method) Arity() int {
+	return meth.Params.Len()
 }
 
-func (lm *Method) Len() int {
-	return lm.Results.Len()
+func (meth *Method) Len() int {
+	return meth.Results.Len()
 }
 
-func (lm *Method) finalize(meth *types.Func) {
-	sig, ok := meth.Type().(*types.Signature)
+func (meth *Method) String() string {
+	return meth.Name
+}
+
+func (meth *Method) finalize(actual *types.Func) {
+	sig, ok := actual.Type().(*types.Signature)
 	if !ok {
 		panic("what the heck?")
 	}
 
-	lm.Name = meth.Name()
+	meth.Name = actual.Name()
 	params := sig.Params()
 	namer := make(namer)
 
-	lm.Params = Params{data: make([]Param, 0, params.Len()), variadic: sig.Variadic()}
+	meth.Params = Params{data: make([]Param, 0, params.Len()), variadic: sig.Variadic()}
 	pos := 0
 	for i := 0; i < params.Len(); i++ {
 		p := params.At(i)
@@ -37,13 +41,13 @@ func (lm *Method) finalize(meth *types.Func) {
 		if name == "" {
 			name = namer.Name(pos, typ)
 		}
-		lm.Params.data = append(lm.Params.data, Param{Name: name, Type: typ})
+		meth.Params.data = append(meth.Params.data, Param{Name: name, Type: typ})
 		pos++
 	}
 	results := sig.Results()
-	lm.Results = make([]Type, results.Len())
+	meth.Results = make([]Type, results.Len())
 	for i := 0; i < results.Len(); i++ {
 		p := results.At(i)
-		lm.Results[i] = Type{p.Type()}
+		meth.Results[i] = Type{p.Type()}
 	}
 }

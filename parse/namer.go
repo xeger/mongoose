@@ -8,7 +8,7 @@ import (
 
 // Namer provides suitable unique names for variables (e.g. method parameters
 // that are unnamed in their interface's definition.) It remembers all of the
-// names it has assigned and will never assign a duplicate.
+// names it has assigned and never repeats a choice.
 type namer map[string]int
 
 var nonUpper = regexp.MustCompile("[^A-Z]")

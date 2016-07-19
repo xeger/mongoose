@@ -92,10 +92,9 @@ func (lt Type) ZeroValue(local string, r Resolver) string {
 		under := named.Underlying()
 		if _, s := under.(*types.Struct); s {
 			return fmt.Sprintf("%s{}", lt.ShortName(local, r))
-		} else {
-			underZero := Type{under}.ZeroValue(local, r)
-			return fmt.Sprintf("%s(%s)", lt.ShortName(local, r), underZero)
 		}
+		underZero := Type{under}.ZeroValue(local, r)
+		return fmt.Sprintf("%s(%s)", lt.ShortName(local, r), underZero)
 	} else if _, s := lt.typ.(*types.Slice); s {
 		return zeroNil
 	} else if _, m := lt.typ.(*types.Map); m {

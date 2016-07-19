@@ -31,7 +31,7 @@ func (lp *Package) Len() int {
 }
 
 func (lp *Package) String() string {
-	return fmt.Sprintf("Package(size=%d)", lp.Len())
+	return fmt.Sprintf("package %s {%v}", lp.Name(), lp.Interfaces)
 }
 
 func (lp *Package) finalize(interfaces map[string]*types.Interface) {
