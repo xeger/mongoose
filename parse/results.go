@@ -32,17 +32,11 @@ func (r Results) Tuple(local string, resolver Resolver) string {
 // as a return value or for other purposes.
 func (r Results) ZeroList(local string, resolver Resolver) string {
 	buf := bytes.Buffer{}
-	if r.Len() > 1 {
-		buf.WriteString("(")
-	}
 	for _, typ := range r {
 		if buf.Len() > 1 {
 			buf.WriteRune(',')
 		}
 		buf.WriteString(typ.ZeroValue(local, resolver))
-	}
-	if r.Len() > 1 {
-		buf.WriteString(")")
 	}
 
 	return buf.String()

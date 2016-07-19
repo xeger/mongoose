@@ -8,13 +8,13 @@ import (
 
 const gomutiItem = `
 {{$typename := .Interface.Name | printf "Mock%s" }}type {{$typename}} struct {
-	Mock gomuti.Mock
 	Stub bool
+	Mock gomuti.Mock
 }
 
 {{$locl := .Package.Name}}{{$res := .Resolver}}{{range .Interface.Methods}}
 func (m {{$typename}}) {{.Name}}{{.Params.Tuple $locl $res}}{{$rtuple := .Results.Tuple $locl $res}}{{if gt .Results.Len 0}} {{$rtuple}}{{end}} {
-	{{$pnames := .Params.NameList}}{{$ptypes := (.Params.TypeList $locl $res)}}ret := gomuti.Ø(m.Mock,"{{.Name}}",{{.Params.NameList}})
+	{{$pnames := .Params.NameList}}{{$ptypes := (.Params.TypeList $locl $res)}}ret := m.Mock.Delegate("{{.Name}}",{{.Params.NameList}})
 	if ret == nil {
 		if m.Stub {
 			return{{if gt .Results.Len 0}} {{.Results.ZeroList $locl $res}}{{end}}
@@ -23,7 +23,11 @@ func (m {{$typename}}) {{.Name}}{{.Params.Tuple $locl $res}}{{$rtuple := .Result
 	}
 	{{range $idx, $typ := .Results}}
 	var r{{$idx}} {{$typ.ShortName $locl $res}}
-	{{if eq $typ.String "error"}}r{{$idx}} = ret.Error({{$idx}}){{else}}r{{$idx}} = ret[{{$idx}}].({{$typ.ShortName $locl $res}}){{end}}
+	if ret[{{$idx}}] == nil {
+		r{{$idx}} = {{$typ.ZeroValue $locl $res}}
+	} else {
+		r{{$idx}} = ret[{{$idx}}].({{$typ.ShortName $locl $res}})
+	}
 	{{end}}
 	return {{.Results.NameList}}
 }
