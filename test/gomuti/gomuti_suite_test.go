@@ -63,5 +63,5 @@ var _ = Describe("gomuti dialect", func() {
 
 func TestMongoose(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Mongoose Suite")
+	RunSpecs(t, "Gomuti Suite")
 }

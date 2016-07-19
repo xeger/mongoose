@@ -22,6 +22,8 @@ type PackagePlacer struct {
 	FilePerInterface bool
 }
 
+// Place decides on the filename and directory that an interface's mock should
+// be written to.
 func (pp PackagePlacer) Place(path string, intf *parse.Interface) string {
 	if pp.FilePerInterface {
 		return filepath.Join(path, fmt.Sprintf("mock_%s.go", inflections.Underscore(intf.Name)))

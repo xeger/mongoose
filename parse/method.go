@@ -4,24 +4,29 @@ import (
 	"go/types"
 )
 
+// Method represents a method of some interface.
 type Method struct {
 	Name    string
 	Params  Params
 	Results Results
 }
 
+// Arity returns the number of required (non-variadic) method parameters.
 func (meth *Method) Arity() int {
 	return meth.Params.Len()
 }
 
+// Len returns the number of return values, including 0 if none.
 func (meth *Method) Len() int {
 	return meth.Results.Len()
 }
 
+// String returns the method's name.
 func (meth *Method) String() string {
 	return meth.Name
 }
 
+// Extract the goods from the actual method defn.
 func (meth *Method) finalize(actual *types.Func) {
 	sig, ok := actual.Type().(*types.Signature)
 	if !ok {

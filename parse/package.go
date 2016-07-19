@@ -12,6 +12,7 @@ import (
 	"golang.org/x/tools/go/loader"
 )
 
+// Package is a package that contains interfaces.
 type Package struct {
 	// Absolute path to this package
 	Dir string
@@ -21,15 +22,17 @@ type Package struct {
 	Interfaces []Interface
 }
 
-// "Natural" name of this package (i.e. base name of path it's located in).
+// Name is the "natural" name of this package (i.e. base name of path it's located in).
 func (lp *Package) Name() string {
 	return filepath.Base(lp.Dir)
 }
 
+// Len is the number of interfaces defined in the sources.
 func (lp *Package) Len() int {
 	return len(lp.Interfaces)
 }
 
+// String returns a pseudocode package definition.
 func (lp *Package) String() string {
 	return fmt.Sprintf("package %s {%v}", lp.Name(), lp.Interfaces)
 }

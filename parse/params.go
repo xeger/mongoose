@@ -5,17 +5,20 @@ import (
 	"go/types"
 )
 
+// Param is a method parameter.
 type Param struct {
 	Name string
 	Type Type
 }
 
+// Params is the set of parameters to a method.
 type Params struct {
 	data     []Param
 	variadic bool
 }
 
-// Formal method declaration i.e. (alice string, bob int)
+// Tuple is the formal parameters declaration surrounded by parentheses
+// e.g. "(alice string, bob int)"
 func (p *Params) Tuple(local string, resolver Resolver) string {
 	buf := bytes.NewBufferString("(")
 	for i := 0; i < p.Len(); i++ {
@@ -38,7 +41,7 @@ func (p *Params) Tuple(local string, resolver Resolver) string {
 	return buf.String()
 }
 
-// List of parameter names, including variadic (without trailing dots)
+// NameList is a comma-separated list of parameter names, including variadic (without trailing dots)
 func (p *Params) NameList() string {
 	buf := bytes.Buffer{}
 
@@ -60,6 +63,7 @@ func (p *Params) NameList() string {
 	return buf.String()
 }
 
+// TypeList is a comma-separated list of parameter types, including variadic (without trailing dots)
 func (p *Params) TypeList(local string, resolver Resolver) string {
 	buf := bytes.Buffer{}
 
@@ -82,6 +86,7 @@ func (p *Params) TypeList(local string, resolver Resolver) string {
 	return buf.String()
 }
 
+// Len is the number of method parameters, excluding variadic .
 func (p *Params) Len() int {
 	if p.data == nil {
 		return 0
@@ -91,6 +96,7 @@ func (p *Params) Len() int {
 	return len(p.data)
 }
 
+// At returns the parameter in a specified position i.
 func (p *Params) At(i int) *Param {
 	if p.data == nil {
 		return nil
@@ -101,6 +107,8 @@ func (p *Params) At(i int) *Param {
 	}
 }
 
+// Variadic returns the variadic parameter, or nil if the method is
+// not variadic.
 func (p *Params) Variadic() *Param {
 	if p.data == nil || len(p.data) < 1 {
 		return nil

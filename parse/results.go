@@ -5,8 +5,11 @@ import (
 	"fmt"
 )
 
+// Results are the type(s) returned by an interface method.
 type Results []Type
 
+// Tuple returns a comma-separated list of types enclosed in parentheses.
+// It is suitable for printing as the return values of a method declaration.
 func (r Results) Tuple(local string, resolver Resolver) string {
 	buf := bytes.Buffer{}
 	if r.Len() > 1 {
@@ -25,7 +28,9 @@ func (r Results) Tuple(local string, resolver Resolver) string {
 	return buf.String()
 }
 
-func (r Results) ZeroTuple(local string, resolver Resolver) string {
+// ZeroList returns a comma-separated list of zero values that are suitable
+// as a return value or for other purposes.
+func (r Results) ZeroList(local string, resolver Resolver) string {
 	buf := bytes.Buffer{}
 	if r.Len() > 1 {
 		buf.WriteString("(")
@@ -43,6 +48,7 @@ func (r Results) ZeroTuple(local string, resolver Resolver) string {
 	return buf.String()
 }
 
+// NameList returns a comma-separated list of parameter names.
 func (r Results) NameList() string {
 	buf := bytes.Buffer{}
 	for i := range r {
@@ -54,6 +60,7 @@ func (r Results) NameList() string {
 	return buf.String()
 }
 
+// Len returns the number of values returned by the method.
 func (r Results) Len() int {
 	if r == nil {
 		return 0
@@ -61,6 +68,7 @@ func (r Results) Len() int {
 	return len(r)
 }
 
+// At returns the type of the return value at index i.
 func (r Results) At(i int) *Type {
 	if r == nil {
 		return nil

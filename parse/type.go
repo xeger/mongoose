@@ -83,6 +83,7 @@ var zeroConverts = regexp.MustCompile("(byte|u?int|float|rune)[0-9]*")
 
 const zeroNil = "nil"
 
+// ZeroValue returns the zero-value literal for this type.
 func (lt Type) ZeroValue(local string, r Resolver) string {
 	typ := lt.typ.String()
 

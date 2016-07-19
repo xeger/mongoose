@@ -11,6 +11,7 @@ type Interface struct {
 	Methods []Method
 }
 
+// Len returns the number of methods.
 func (intf *Interface) Len() int {
 	return len(intf.Methods)
 }
