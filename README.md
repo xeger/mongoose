@@ -1,5 +1,7 @@
 # Mongoose
 
+**WARNING:** Experimental code; expectation matchers and spies are unimplemented. 
+
 [![Build Status](https://travis-ci.org/xeger/mongoose.png)](https://travis-ci.org/xeger/mongoose)
 
 Mongoose is a tool that parses your Go source code and generates a [mock](https://en.wikipedia.org/wiki/Mock_object) implementation of every [interface](https://gobyexample.com/interfaces) it finds. Mongoose can generate code for a number of back-end mocking packages:
