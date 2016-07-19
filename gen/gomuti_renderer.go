@@ -17,7 +17,7 @@ func (m {{$typename}}) {{.Name}}{{.Params.Tuple $locl $res}}{{$rtuple := .Result
 	{{$pnames := .Params.NameList}}{{$ptypes := (.Params.TypeList $locl $res)}}ret := gomuti.Ø(m.Mock,"{{.Name}}",{{.Params.NameList}})
 	if ret == nil {
 		if m.Stub {
-			return{{if gt .Results.Len 0}} {{.Results.ZeroTuple $locl $res}}{{end}}
+			return{{if gt .Results.Len 0}} {{.Results.ZeroList $locl $res}}{{end}}
 		}
 		panic("{{$typename}}: unexpected call to {{.Name}}")
 	}
