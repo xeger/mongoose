@@ -1,6 +1,6 @@
 # Mongoose
 
-**WARNING:** Experimental code; spies are unimplemented. 
+**WARNING:** Experimental code; see CHANGELOG for planned interface-breaking changes. 
 
 [![Build Status](https://travis-ci.org/xeger/mongoose.png)](https://travis-ci.org/xeger/mongoose)
 
