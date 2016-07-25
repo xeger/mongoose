@@ -7,7 +7,9 @@ import (
 )
 
 const testifyItem = `
-{{$typename := .Interface.Name | printf "Mock%s" }}type {{$typename}} struct {
+{{$typename := .Interface.Name | printf "Mock%s" }}// {{$typename}} is a test double for {{.Interface.Name}}.
+// Generated with github.com/xeger/mongoose; do not edit by hand.
+type {{$typename}} struct {
 	mock.Mock
 }
 

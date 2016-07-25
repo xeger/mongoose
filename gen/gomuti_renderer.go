@@ -7,13 +7,25 @@ import (
 )
 
 const gomutiItem = `
-{{$typename := .Interface.Name | printf "Mock%s" }}type {{$typename}} struct {
+{{$typename := .Interface.Name | printf "Mock%s" }}// {{$typename}} is a test double for {{.Interface.Name}}.
+// Generated with github.com/xeger/mongoose; do not edit by hand.
+type {{$typename}} struct {
 	Stub bool
 	Mock gomuti.Mock
+	Spy  gomuti.Spy
+}
+
+// Lazy-initialize spy controller whenever a mock method is called.
+func (m *{{$typename}}) init() {
+	if m.Spy == nil {
+		m.Spy = gomuti.Spy{}
+	}
 }
 
 {{$locl := .Package.Name}}{{$res := .Resolver}}{{range .Interface.Methods}}
-func (m {{$typename}}) {{.Name}}{{.Params.Tuple $locl $res}}{{$rtuple := .Results.Tuple $locl $res}}{{if gt .Results.Len 0}} {{$rtuple}}{{end}} {
+func (m *{{$typename}}) {{.Name}}{{.Params.Tuple $locl $res}}{{$rtuple := .Results.Tuple $locl $res}}{{if gt .Results.Len 0}} {{$rtuple}}{{end}} {
+	m.init()
+	m.Spy.Observe("{{.Name}}", {{.Params.NameList}})
 	{{$pnames := .Params.NameList}}{{$ptypes := (.Params.TypeList $locl $res)}}ret := m.Mock.Delegate("{{.Name}}",{{.Params.NameList}})
 	if ret == nil {
 		if m.Stub {

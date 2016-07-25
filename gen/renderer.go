@@ -52,7 +52,7 @@ type itemContext struct {
 	Interface *parse.Interface
 }
 
-const templateHeader = `// Generated with github.com/xeger/mongoose - do not edit by hand
+const templateHeader = `
 package {{.Package.Name}}
 
 import ({{range $nick, $pkg := .Resolver.Imports}}
