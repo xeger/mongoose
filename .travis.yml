@@ -7,5 +7,5 @@ install:
   - go get github.com/onsi/ginkgo/ginkgo
   - go get github.com/mattn/goveralls
 script:
-  - make test 
+  - make test
   - # goveralls -coverprofile=flatpack.coverprofile -service=travis-ci -repotoken $COVERALLS_TOKEN

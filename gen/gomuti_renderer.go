@@ -26,7 +26,7 @@ func (m *{{$typename}}) init() {
 func (m *{{$typename}}) {{.Name}}{{.Params.Tuple $locl $res}}{{$rtuple := .Results.Tuple $locl $res}}{{if gt .Results.Len 0}} {{$rtuple}}{{end}} {
 	m.init()
 	m.Spy.Observe("{{.Name}}", {{.Params.NameList}})
-	{{$pnames := .Params.NameList}}{{$ptypes := (.Params.TypeList $locl $res)}}ret := m.Mock.Delegate("{{.Name}}",{{.Params.NameList}})
+	{{$pnames := .Params.NameList}}{{$ptypes := (.Params.TypeList $locl $res)}}ret := m.Mock.Call("{{.Name}}",{{.Params.NameList}})
 	if ret == nil {
 		if m.Stub {
 			return{{if gt .Results.Len 0}} {{.Results.ZeroList $locl $res}}{{end}}
