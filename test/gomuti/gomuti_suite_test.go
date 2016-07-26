@@ -35,10 +35,6 @@ var _ = Describe("gomuti dialect", func() {
 			}).Should(Panic())
 		})
 
-		It("matches basic-type params using equivalence", func() {
-			Ω(v.Drive("north", 42)).Should(Equal(*URL))
-		})
-
 		It("panics on unmatched calls", func() {
 			Ω(func() {
 				v.Drive("southeast", 12)

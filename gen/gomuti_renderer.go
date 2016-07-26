@@ -51,10 +51,10 @@ func (m *{{$typename}}) {{.Name}}{{.Params.Tuple $locl $res}}{{$rtuple := .Resul
 // gomuti.Allow() method.
 func NewGomutiRenderer() Renderer {
 	r := parse.NewResolver()
-	r.Import("gomuti", "github.com/xeger/gomuti")
+	r.Import("gomuti", "github.com/xeger/gomuti/types")
 	tr := &templateRenderer{}
 	tr.Resolver = r
-	tr.Header = template.New("gomutiHeader")
+	tr.Header = template.New("templateHeader")
 	tr.Header.Parse(templateHeader)
 	tr.Item = template.New("gomutiItem")
 	tr.Item.Parse(gomutiItem)
