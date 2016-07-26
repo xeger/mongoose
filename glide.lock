@@ -1,5 +1,5 @@
 hash: e24314e38ae3333ca963f1bd7bd1fa238a797c04e24d045c763792ddbbb96c0c
-updated: 2016-07-25T23:58:45.687606906-07:00
+updated: 2016-07-26T00:47:16.561906914-07:00
 imports:
 - name: github.com/acsellers/inflections
   version: cb98bfe9e3ee28e8649778f5fbb2e95f54f71b39
@@ -16,7 +16,7 @@ imports:
   subpackages:
   - difflib
 - name: github.com/stretchr/objx
-  version: 1a9d0bb9f541897e62256577b352fdbc1fb4fd94
+  version: cbeaeb16a013161a98496fad62933b1d21786672
 - name: github.com/stretchr/testify
   version: d77da356e56a7428ad25149ca77381849a6a5232
   subpackages:
