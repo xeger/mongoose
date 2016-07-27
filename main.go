@@ -14,7 +14,7 @@ import (
 
 var mockPackage = flag.String("mock", "gomuti", "framework: testify,...")
 var recurse = flag.Bool("r", false, "recurse into subdirectories")
-var mockOutput = flag.String("out", ".", "dir/subdir for mock files (- for stdout)")
+var mockOutput = flag.String("out", ".", "package-relative subdir for mock files (- for stdout)")
 
 func gomuti() bool {
 	return strings.Index(*mockPackage, "gomuti") >= 0
@@ -53,31 +53,33 @@ type outcome struct {
 
 var nonPackage = regexp.MustCompile("^(.bzr|.git|.hg|.svn|vendor)$")
 
-func findPackages(basedir string) ([]string, error) {
+func findPackages(basedirs []string) ([]string, error) {
 	if *recurse {
 		packages := make([]string, 0, 10)
 
-		werr := filepath.Walk(basedir, func(path string, fi os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if fi.IsDir() {
-				if nonPackage.MatchString(filepath.Base(path)) {
-					return filepath.SkipDir
+		for _, basedir := range basedirs {
+			werr := filepath.Walk(basedir, func(path string, fi os.FileInfo, err error) error {
+				if err != nil {
+					return err
 				}
-				packages = append(packages, path)
-			}
-			return nil
-		})
+				if fi.IsDir() {
+					if nonPackage.MatchString(filepath.Base(path)) {
+						return filepath.SkipDir
+					}
+					packages = append(packages, path)
+				}
+				return nil
+			})
 
-		if werr != nil {
-			return nil, werr
+			if werr != nil {
+				return nil, werr
+			}
 		}
 
 		return packages, nil
 	}
 
-	return []string{basedir}, nil
+	return basedirs, nil
 }
 
 func doPackage(dir string, oc chan outcome) {
@@ -122,15 +124,15 @@ func doPackage(dir string, oc chan outcome) {
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %s [flags] <dir>\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "Generates a mock for every golang interface defined in <dir>\n\n")
+		fmt.Fprintf(os.Stderr, "Usage: %s [flags] <dir> [dir,dir,...]\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Generates a mock for every golang interface defined in any named dir\n\n")
 		fmt.Fprintf(os.Stderr, "Flags:\n")
 		flag.PrintDefaults()
 	}
 
 	flag.Parse()
 
-	dirs, err := findPackages(flag.Arg(0))
+	dirs, err := findPackages(flag.Args())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %s\n", err)
 		os.Exit(1)
