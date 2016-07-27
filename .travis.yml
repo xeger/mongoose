@@ -3,9 +3,10 @@ go:
   - 1.6
 sudo: false
 install:
-  - go get github.com/onsi/gomega
   - go get github.com/onsi/ginkgo/ginkgo
   - go get github.com/mattn/goveralls
+  - go get github.com/Masterminds/glide
+  - glide install
 script:
   - make test
   - # goveralls -coverprofile=flatpack.coverprofile -service=travis-ci -repotoken $COVERALLS_TOKEN

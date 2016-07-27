@@ -4,3 +4,5 @@ import:
   - package: golang.org/x/tools/go/loader
   - package: github.com/onsi/ginkgo
   - package: github.com/onsi/gomega
+  - package: github.com/xeger/gomuti
+  - package: github.com/stretchr/testify

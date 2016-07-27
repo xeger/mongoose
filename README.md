@@ -1,10 +1,8 @@
 # Mongoose
 
-**WARNING:** Experimental code; see CHANGELOG for planned interface-breaking changes. 
-
 [![Build Status](https://travis-ci.org/xeger/mongoose.png)](https://travis-ci.org/xeger/mongoose)
 
-Mongoose is a tool that parses your Go source code and generates a [mock](https://en.wikipedia.org/wiki/Mock_object) implementation of every [interface](https://gobyexample.com/interfaces) it finds. Mongoose can generate code for a number of back-end mocking packages:
+Mongoose is a tool that parses your Go source code and generates a [mock](https://en.wikipedia.org/wiki/Mock_object) implementation of every [interface](https://gobyexample.com/interfaces) it finds. Mongoose can generate code for a number of mocking packages:
 
  * [Gomuti](https://github.com/xeger/gomuti)
  * [Testify](https://github.com/stretchr/testify)
@@ -19,56 +17,67 @@ $ go get github.com/xeger/mongoose
 ```
 ### Generate your mocks
 
-Run `mongoose` and pass it the name of a directory that contains Go sources. If you are working on package `example/mockitup`:
+Run `mongoose` and pass it the name of one or more directories that contain Go sources. If you are working on package `example/mockitup`:
 
 ```bash
 $ cd ~/go/src/example/mockitup
-$ mongoose
+$ mongoose .
 ```
 
-By default, Mongoose will generate a file named `mocks.go` in the package directory. Mock types are named after the types they mimic;
-if your package had `Widget` and `Shipment` interfaces, then `mocks.go` would contain `MockWidget` and `MockShipment`.
+By default, mocks use the [Gomuti](https://github.com/xeger/gomuti) package to record and play back method calls. For information on Testify and other supported mocking toolkits, skip to [Alternative mocking packages](#alternative-mocking-packages) below.
 
-By default, mocks use the [Gomuti](https://github.com/xeger/gomuti) package to record and play back method calls. (For information on Testify and other supported mocking toolkits, skip to [Alternative mocking packages](#alternative-mocking-packages) below.)
+Use the `-r` flag to recurse into all subpackages and generate mocks in parallel.
 
-With Gomuti, each mock is a struct type that exposes only the methods defined on your interface. You can use `gomuti.Allow()` to program behaviors for any instance of the mock type. To mock the behavior of the `Munge` method, which panics if you pass zero:
+```bash
+$ cd ~/go/src/gigantic/project
+$ mongoose -r commerce services util
+```
+
+### Write your tests
+
+Consult [the Gomuti documentation](https://github.com/xeger/gomuti) for extensive examples. As a cheat sheet:
+
 ```go
 import (
+  . "github.com/onsi/ginkgo"
   . "github.com/xeger/gomuti"
 )
 
-w := &MockWidget{}
-Allow(w).Call("Munge").With(0).Panic("fatal error")
-Allow(w).Call("Munge").With(1).Return(true)
+var _ = Describe("stuff", func() {
+  It("works", func() {
+    // mongoose has generated this type with one method:
+    //   Add(l, r int64) int64
+    adder := MockAdder{}
+    Allow(adder).Call("Add").With(5,5).Return(10)
+    Allow(adder).Call("Add").With(10,5).Return(15)
+    Allow(adder).Call("Add").With(BeNumerically(">", 2**31-1),Anything()).Panic()
+
+    result := subject.Multiply(3,5))
+    Expect(adder).To(HaveCall("Add").Times(2))
+    Expect(result).To(Equal(15))    
+
+    Expect(func() {
+      subject.Multiply(2**32, 2)
+    }).To(Panic())
+  })
+})
 ```
-
-Rather than expecting specific parameter values, you can use [Gomega](https://github.com/onsi/gomega) matchers to define a range or set of permissible values:
-
-```go
-Allow(w).Call("Munge").With(BeNumerically(">", 1)).Return(false)
-```
-
-Every mock can also become a [stub](http://martinfowler.com/articles/mocksArentStubs.html#TheDifferenceBetweenMocksAndStubs), freeing you from the need to mock boring behavior:
-
-```go
-w := &MockWidget{Stub:true}
-w.Munge(1) // returns zero value (false) because no call matches
-```
-
-Finally, Gomuti mocks are [spies](https://robots.thoughtbot.com/spy-vs-spy). Custom Gomega matchers allow you to do [BDD](https://en.wikipedia.org/wiki/Behavior-driven_development) with Ginkgo:
-```
-Expect(w).To( HaveCall("Munge").With( BeNumerically(">", 0) ).Once() )
-```
-
-For more information about gomuti, its relation to Gomega, and available matchers, consult [the gomuti documentation](https://github.com/xeger/gomuti).
 
 ## Alternative mocking packages
 
 ### Testify
 
-TODO - docs
+TODO - testify docs
+
+```bash
+$ mongoose -mock=testify somepkg
+```
+
+Mongoose follows the filesystem conventions of testify's mockery tool; each mock is placed in its own file in the same directory as the mocked interface.
 
 ### Plain stubs
+
+WARNING: not implemented yet. Super easy to add but not very useful...
 
 TODO - docs
 
