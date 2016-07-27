@@ -6,7 +6,6 @@ import (
 	"go/build"
 	"go/importer"
 	"go/types"
-	"log"
 	"path/filepath"
 
 	"golang.org/x/tools/go/loader"
@@ -65,8 +64,8 @@ func NewPackage(path string) (*Package, error) {
 	conf.TypeCheckFuncBodies = func(_ string) bool { return false }
 	conf.TypeChecker.DisableUnusedImportCheck = true
 	conf.TypeChecker.Error = func(err error) {
-		// TODO: something else about this error?
-		log.Println("parse error", err.Error())
+		// swallow the error for now; they end up getting reported as an error return
+		//fmt.Fprintf(os.Stderr, "    %s\n", err.Error())
 	}
 	conf.TypeChecker.Importer = importer.Default()
 
