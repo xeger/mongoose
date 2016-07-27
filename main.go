@@ -54,10 +54,15 @@ type outcome struct {
 var nonPackage = regexp.MustCompile("^(.bzr|.git|.hg|.svn|vendor)$")
 
 func findPackages(basedirs []string) ([]string, error) {
-	if *recurse {
-		packages := make([]string, 0, 10)
+	packages := make([]string, 0, 10)
 
-		for _, basedir := range basedirs {
+	for _, basedir := range basedirs {
+		abs, err := filepath.Abs(basedir)
+		if err != nil {
+			return nil, err
+		}
+
+		if *recurse {
 			werr := filepath.Walk(basedir, func(path string, fi os.FileInfo, err error) error {
 				if err != nil {
 					return err
@@ -72,14 +77,13 @@ func findPackages(basedirs []string) ([]string, error) {
 			})
 
 			if werr != nil {
-				return nil, werr
+				return nil, err
 			}
+		} else {
+			packages = append(packages, abs)
 		}
-
-		return packages, nil
 	}
-
-	return basedirs, nil
+	return packages, nil
 }
 
 func doPackage(dir string, oc chan outcome) {
@@ -111,6 +115,7 @@ func doPackage(dir string, oc chan outcome) {
 			oc <- outcome{dir, "Code generation", total, err}
 			return
 		}
+
 		err = writer.Write(path, source)
 		if err != nil {
 			oc <- outcome{dir, "Code generation", total, err}
