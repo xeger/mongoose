@@ -94,12 +94,22 @@ func NewPackage(path string) (*Package, error) {
 		for _, name := range scope.Names() {
 			obj := scope.Lookup(name)
 			if obj == nil {
+				// not sure why this happens...
 				continue
 			}
+
 			typ, ok := obj.Type().(*types.Named)
 			if !ok {
+				// don't bother to mock unnamed types
 				continue
 			}
+
+			if typ.Obj().Pkg() != pinfo.Pkg {
+				// this type lives in another package, but we parsed it because
+				// it's mentioned in this package.
+				continue
+			}
+
 			name = typ.Obj().Name()
 			iface, ok := typ.Underlying().(*types.Interface)
 			if !ok {
