@@ -104,9 +104,11 @@ func (lt Type) ZeroValue(local string, r Resolver) string {
 		return zeroNil
 	} else if _, m := lt.typ.(*types.Pointer); m {
 		return zeroNil
+	} else if _, m := lt.typ.(*types.Signature); m {
+		return zeroNil
 	}
 
-	panic(fmt.Sprintf("unhandled ZeroValue for type %s", typ))
+	panic(fmt.Sprintf("unhandled ZeroValue for %T (%s)", lt.typ, typ))
 }
 
 func (lt Type) zeroBasic(basic *types.Basic) string {

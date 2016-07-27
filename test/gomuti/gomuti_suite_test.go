@@ -23,7 +23,7 @@ var _ = Describe("gomuti dialect", func() {
 		BeforeEach(func() {
 			v = &fixtures.MockVehicle{}
 			w = &fixtures.MockWheel{}
-			Â(v).Call("Attach").With([]fixtures.Wheel{w})
+			Â(v).Call("Attach").With("hello", []fixtures.Wheel{w})
 			Â(v).Call("Drive").With("north", 42.0).Return(*URL)
 			Â(w).Call("Diameter").Panic("big wheel keep on turnin'")
 		})
@@ -47,7 +47,7 @@ var _ = Describe("gomuti dialect", func() {
 			v := fixtures.MockVehicle{Stub: true}
 			w := fixtures.MockWheel{Stub: true}
 			Ω(v.Range()).Should(Equal(0))
-			v.Attach()
+			v.Attach("getting in")
 			Ω(v.Wheels()).Should(BeNil())
 			Ω(v.Drive("east", -5)).Should(BeEquivalentTo(url.URL{}))
 			Ω(v.Refuel(&fixtures.MockFuelCan{Stub: true})).Should(BeNil())

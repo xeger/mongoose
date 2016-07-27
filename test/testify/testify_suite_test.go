@@ -14,10 +14,10 @@ var _ = Describe("testify dialect", func() {
 		v := &fixtures.MockVehicle{}
 		w := &fixtures.MockWheel{}
 
-		v.On("Attach", []fixtures.Wheel{w})
+		v.On("Attach", "hello", []fixtures.Wheel{w})
 		w.On("Diameter").Return(17.0)
 
-		v.Attach(w)
+		v.Attach("hello", w)
 	})
 })
 

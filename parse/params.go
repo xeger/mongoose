@@ -31,6 +31,9 @@ func (p *Params) Tuple(local string, resolver Resolver) string {
 		buf.WriteString(pd.Type.ShortName(local, resolver))
 	}
 	if p.variadic {
+		if buf.Len() > 1 {
+			buf.WriteString(",")
+		}
 		vp := p.Variadic()
 		ut := Type{typ: vp.Type.typ.(*types.Slice).Elem()}
 		buf.WriteString(vp.Name)
