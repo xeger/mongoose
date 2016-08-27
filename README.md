@@ -1,6 +1,6 @@
 # Mongoose
 
-[![Build Status](https://travis-ci.org/xeger/mongoose.png)](https://travis-ci.org/xeger/mongoose)
+[![Build Status](https://travis-ci.org/xeger/mongoose.png)](https://travis-ci.org/xeger/mongoose) [![Go Report](https://goreportcard.com/badge/github.com/xeger/mongoose)](https://goreportcard.com/report/github.com/xeger/mongoose)
 
 Mongoose is a tool that parses your Go source code and generates a [mock](https://en.wikipedia.org/wiki/Mock_object) implementation of every [interface](https://gobyexample.com/interfaces) it finds. Mongoose can generate code for a number of mocking packages:
 
