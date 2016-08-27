@@ -1,3 +1,4 @@
+// Package main implements the Mongoose CLI tool. For usage information, see the README: https://github.com/xeger/mongoose
 package main
 
 import (
