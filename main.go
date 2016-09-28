@@ -13,9 +13,10 @@ import (
 	"github.com/xeger/mongoose/parse"
 )
 
-var mockPackage = flag.String("mock", "gomuti", "framework: testify,...")
+var mockPackage = flag.String("mock", "gomuti", "mocking framework: gomuti|testify")
 var recurse = flag.Bool("r", false, "recurse into subdirectories")
 var mockOutput = flag.String("out", ".", "package-relative subdir for mock files (- for stdout)")
+var name = flag.String("name", "", "name or matching regular expression of interface to generate mock for")
 
 func gomuti() bool {
 	return strings.Index(*mockPackage, "gomuti") >= 0
@@ -54,7 +55,7 @@ type outcome struct {
 
 var nonPackage = regexp.MustCompile("^(.bzr|.git|.hg|.svn|vendor)$")
 
-func findPackages(basedirs []string) ([]string, error) {
+func findPackages(basedirs []string, recurse bool) ([]string, error) {
 	packages := make([]string, 0, 10)
 
 	for _, basedir := range basedirs {
@@ -63,7 +64,7 @@ func findPackages(basedirs []string) ([]string, error) {
 			return nil, err
 		}
 
-		if *recurse {
+		if recurse {
 			werr := filepath.Walk(basedir, func(path string, fi os.FileInfo, err error) error {
 				if err != nil {
 					return err
@@ -87,7 +88,7 @@ func findPackages(basedirs []string) ([]string, error) {
 	return packages, nil
 }
 
-func doPackage(dir string, oc chan outcome) {
+func doPackage(dir string, name *regexp.Regexp, oc chan outcome) {
 	placer := placer()
 	writer := writer()
 
@@ -104,6 +105,9 @@ func doPackage(dir string, oc chan outcome) {
 
 	placed := map[string][]parse.Interface{}
 	for _, intf := range pkg.Interfaces {
+		if name != nil && !name.MatchString(intf.Name) {
+			continue
+		}
 		place := placer.Place(pkg.Dir, &intf)
 		placed[place] = append(placed[place], intf)
 	}
@@ -128,6 +132,21 @@ func doPackage(dir string, oc chan outcome) {
 	oc <- outcome{dir, "Code generation", total, nil}
 }
 
+// Regexp that matches a valid golang identifier (i.e. type name); used to
+// determine whether we should treat the -name flag as a single name, or as
+// a regular expression that matches a range of names.
+var identifierPat = regexp.MustCompile(`[\p{L}_][\p{L}\p{N}_]*`)
+
+func parseName(name string) (*regexp.Regexp, error) {
+	if name != "" && identifierPat.MatchString(name) {
+		return regexp.Compile(fmt.Sprintf("^%s$", regexp.QuoteMeta(name)))
+	} else if name != "" {
+		return regexp.Compile(name)
+	} else {
+		return nil, nil
+	}
+}
+
 func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [flags] <dir> [dir,dir,...]\n", os.Args[0])
@@ -138,16 +157,35 @@ func main() {
 
 	flag.Parse()
 
-	dirs, err := findPackages(flag.Args())
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: %s\n", err)
-		os.Exit(1)
+	var dirs []string
+
+	if gopackage := os.Getenv("GOPACKAGE"); gopackage != "" {
+		// go-generate mode: PWD is the one and only package
+		pwd, err := os.Getwd()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: %s\n", err)
+		}
+		dirs = []string{pwd}
+	} else {
+		// normal mode: packages are specified as CLI args, possibly influenced
+		// by the -r flag
+		found, err := findPackages(flag.Args(), *recurse)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: %s\n", err)
+			os.Exit(1)
+		}
+		dirs = found
 	}
 
 	outcomes := make(chan outcome, 3)
 
+	namePat, err := parseName(*name)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: %s\n", err)
+	}
+
 	for _, dir := range dirs {
-		go doPackage(dir, outcomes)
+		go doPackage(dir, namePat, outcomes)
 	}
 
 	failed := 0
