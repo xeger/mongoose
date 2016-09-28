@@ -1,6 +1,6 @@
 package generate
 
-//go:generate mongoose -mock testify -out . -name Generated
+//go:generate mongoose -mock testify -name Generated
 
 // Generated is a test of mongoose when invoked by `go generate`.
 type Generated interface {
