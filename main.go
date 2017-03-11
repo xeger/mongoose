@@ -93,6 +93,9 @@ func doPackage(dir string, name *regexp.Regexp, oc chan outcome) {
 	writer := writer()
 
 	pkg, err := parse.NewPackage(dir)
+	if strings.Index(pkg.Name(), "fuckme") >= 0 {
+		panic(pkg.Name())
+	}
 	if err != nil {
 		if strings.Index(err.Error(), "no buildable Go source files") == 0 {
 			// not really an error...

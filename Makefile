@@ -14,7 +14,6 @@ test/gomuti: install
 	cd test/gomuti && ginkgo
 
 test/gomuti/generate: install
-	go install github.com/xeger/mongoose
 	cd test/gomuti/generate && go generate
 	cd test/gomuti/generate && ginkgo
 	@echo "Checking for correct usage of -name flag:"
@@ -26,7 +25,6 @@ test/testify: install
 	cd test/testify && ginkgo
 
 test/testify/generate: install
-	go install github.com/xeger/mongoose
 	cd test/testify/generate && go generate
 	cd test/testify/generate && ginkgo
 	@echo "Checking for correct usage of -name flag:"

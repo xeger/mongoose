@@ -77,7 +77,12 @@ Mongoose follows the filesystem conventions of testify's mockery tool; each mock
 
 ### Plain stubs
 
-WARNING: not implemented yet. Super easy to add but not very useful...
+WARNING: not implemented yet.
+
+Mongoose could be capable of generating standalone stubs in the style of counterfeiter:
+https://github.com/maxbrunsfeld/counterfeiter
+
+It would also be nice if Mongoose's standalones could function as stubs.
 
 TODO - docs
 

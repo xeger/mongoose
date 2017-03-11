@@ -7,6 +7,7 @@ import (
 	"go/importer"
 	"go/types"
 	"path/filepath"
+	"strings"
 
 	"golang.org/x/tools/go/loader"
 )
@@ -21,8 +22,13 @@ type Package struct {
 	Interfaces []Interface
 }
 
-// Name is the "natural" name of this package (i.e. base name of path it's located in).
+// Name is the package name that generated source files should use.
 func (lp *Package) Name() string {
+	for _, n := range lp.Names {
+		if !strings.Contains(n, "_test") {
+			return n
+		}
+	}
 	return filepath.Base(lp.Dir)
 }
 
