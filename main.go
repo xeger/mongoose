@@ -4,6 +4,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"go/format"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -124,11 +125,19 @@ func doPackage(dir string, name *regexp.Regexp, oc chan outcome) {
 			return
 		}
 
+		formatted, err := format.Source([]byte(source))
+		if err != nil {
+			oc <- outcome{dir, "Code generation", total, err}
+			return
+		}
+		source = string(formatted)
+
 		err = writer.Write(path, source)
 		if err != nil {
 			oc <- outcome{dir, "Code generation", total, err}
 			return
 		}
+
 		total += len(intfs)
 	}
 

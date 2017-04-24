@@ -2,8 +2,6 @@ package gen
 
 import (
 	"text/template"
-
-	"github.com/xeger/mongoose/parse"
 )
 
 const testifyItem = `
@@ -34,12 +32,8 @@ func (_m *{{$typename}}) {{.Name}}{{.Params.Tuple $locl $res}}{{$rtuple := .Resu
 // The mock type embeds tesify/mock.Mock and can be programmed using the
 // embedded methods.
 func NewTestifyRenderer() Renderer {
-	r := parse.NewResolver()
-	r.Import("mock", "github.com/stretchr/testify/mock")
-	tr := &templateRenderer{}
-	tr.Resolver = r
-	tr.Header = template.New("testifyHeader")
-	tr.Header.Parse(templateHeader)
+	tr := newTemplateRenderer()
+	tr.Resolver.Import("mock", "github.com/stretchr/testify/mock")
 	tr.Item = template.New("testifyItem")
 	tr.Item.Parse(testifyItem)
 	return tr

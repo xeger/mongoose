@@ -2,8 +2,6 @@ package gen
 
 import (
 	"text/template"
-
-	"github.com/xeger/mongoose/parse"
 )
 
 const gomutiItem = `
@@ -15,31 +13,46 @@ type {{$typename}} struct {
 	Spy  gomuti.Spy
 }
 
-// Lazy-initialize spy controller whenever a mock method is called.
+// init lazy-initializes a spy controller whenever a mock method is called.
 func (m *{{$typename}}) init() {
 	if m.Spy == nil {
 		m.Spy = gomuti.Spy{}
 	}
 }
 
-{{$locl := .Package.Name}}{{$res := .Resolver}}{{range .Interface.Methods}}
-func (m *{{$typename}}) {{.Name}}{{.Params.Tuple $locl $res}}{{$rtuple := .Results.Tuple $locl $res}}{{if gt .Results.Len 0}} {{$rtuple}}{{end}} {
+{{$locl := .Package.Name}}{{$res := .Resolver}}
+{{range .Interface.Methods}}
+{{$mname := .Name}}
+{{$rtuple := .Results.Tuple $locl $res}}
+{{$pnames := .Params.NameList}}
+{{$ptypes := (.Params.TypeList $locl $res)}}
+// {{$mname}} is a mock interface method.
+func (m *{{$typename}}) {{$mname}}{{.Params.Tuple $locl $res}}{{if gt .Results.Len 0}} {{$rtuple}}{{end}} {
 	m.init()
-	m.Spy.Observe("{{.Name}}", {{.Params.NameList}})
-	{{$pnames := .Params.NameList}}{{$ptypes := (.Params.TypeList $locl $res)}}ret := m.Mock.Call("{{.Name}}",{{.Params.NameList}})
+	m.Spy.Observe("{{$mname}}", {{.Params.NameList}})
+	ret := m.Mock.Call("{{$mname}}", {{.Params.NameList}})
 	if ret == nil {
 		if m.Stub {
 			return{{if gt .Results.Len 0}} {{.Results.ZeroList $locl $res}}{{end}}
 		}
-		panic("{{$typename}}: unexpected call to {{.Name}}")
+		panic("{{$typename}}: unexpected call to {{$mname}}")
+	}
+
+	{{$rlen := .Results | len}}
+	if len(ret) != {{$rlen}} {
+		panic(fmt.Sprintf("{{$typename}}.{{$mname}}: return value mismatch; expected %d, got %d: %v", {{$rlen}}, len(ret), ret))
 	}
 	{{range $idx, $typ := .Results}}
-	var r{{$idx}} {{$typ.ShortName $locl $res}}
-	if ret[{{$idx}}] == nil {
-		r{{$idx}} = {{$typ.ZeroValue $locl $res}}
-	} else {
-		r{{$idx}} = ret[{{$idx}}].({{$typ.ShortName $locl $res}})
-	}
+		var r{{$idx}} {{$typ.ShortName $locl $res}}
+		if ret[{{$idx}}] == nil {
+			r{{$idx}} = {{$typ.ZeroValue $locl $res}}
+		} else {
+			r{{$idx}}t, ok := ret[{{$idx}}].({{$typ.ShortName $locl $res}})
+			if !ok {
+				panic(fmt.Sprintf("{{$typename}}.{{$mname}}: return type mismatch; expected %T, got %T", r{{$idx}}t, ret[{{$idx}}]))
+			}
+			r{{$idx}} = r{{$idx}}t
+		}
 	{{end}}
 	return {{.Results.NameList}}
 }
@@ -50,12 +63,9 @@ func (m *{{$typename}}) {{.Name}}{{.Params.Tuple $locl $res}}{{$rtuple := .Resul
 // The mock type contains a gomuti.Mock and can be programmed using the
 // gomuti.Allow() method.
 func NewGomutiRenderer() Renderer {
-	r := parse.NewResolver()
-	r.Import("gomuti", "github.com/xeger/gomuti/types")
-	tr := &templateRenderer{}
-	tr.Resolver = r
-	tr.Header = template.New("templateHeader")
-	tr.Header.Parse(templateHeader)
+	tr := newTemplateRenderer()
+	tr.Resolver.Import("fmt", "fmt")
+	tr.Resolver.Import("gomuti", "github.com/xeger/gomuti/types")
 	tr.Item = template.New("gomutiItem")
 	tr.Item.Parse(gomutiItem)
 	return tr

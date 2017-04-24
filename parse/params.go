@@ -24,7 +24,7 @@ func (p *Params) Tuple(local string, resolver Resolver) string {
 	for i := 0; i < p.Len(); i++ {
 		pd := p.data[i]
 		if buf.Len() > 1 {
-			buf.WriteString(",")
+			buf.WriteString(", ")
 		}
 		buf.WriteString(pd.Name)
 		buf.WriteRune(' ')
@@ -32,7 +32,7 @@ func (p *Params) Tuple(local string, resolver Resolver) string {
 	}
 	if p.variadic {
 		if buf.Len() > 1 {
-			buf.WriteString(",")
+			buf.WriteString(", ")
 		}
 		vp := p.Variadic()
 		ut := Type{typ: vp.Type.typ.(*types.Slice).Elem()}
@@ -51,13 +51,13 @@ func (p *Params) NameList() string {
 	for i := 0; i < p.Len(); i++ {
 		pd := p.data[i]
 		if buf.Len() > 0 {
-			buf.WriteString(",")
+			buf.WriteString(", ")
 		}
 		buf.WriteString(pd.Name)
 	}
 	if p.variadic {
 		if buf.Len() > 0 {
-			buf.WriteString(",")
+			buf.WriteString(", ")
 		}
 		v := p.Variadic()
 		buf.WriteString(v.Name)
@@ -73,13 +73,13 @@ func (p *Params) TypeList(local string, resolver Resolver) string {
 	for i := 0; i < p.Len(); i++ {
 		pd := p.data[i]
 		if buf.Len() > 0 {
-			buf.WriteString(",")
+			buf.WriteString(", ")
 		}
 		buf.WriteString(pd.Type.ShortName(local, resolver))
 	}
 	if p.variadic {
 		if buf.Len() > 0 {
-			buf.WriteString(",")
+			buf.WriteString(", ")
 		}
 		vp := p.Variadic()
 		ut := Type{typ: vp.Type.typ.(*types.Slice).Elem()}

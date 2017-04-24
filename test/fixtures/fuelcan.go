@@ -1,6 +1,6 @@
 package fixtures
 
-// FuelCan holds fuel.
+// FuelCan can hold fuel!
 type FuelCan interface {
 	Qty() float32
 	Capacity() float32

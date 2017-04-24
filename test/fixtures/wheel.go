@@ -1,6 +1,6 @@
 package fixtures
 
-// Wheel goes round and round.
+// Wheel goes round and round!
 type Wheel interface {
 	Diameter() float32
 }

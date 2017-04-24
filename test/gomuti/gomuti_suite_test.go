@@ -55,6 +55,42 @@ var _ = Describe("gomuti dialect", func() {
 			Ω(w.Diameter()).Should(BeEquivalentTo(0.0))
 		})
 	})
+
+	Context("return values", func() {
+		It("detects type mismatch", func() {
+			v := &fixtures.MockVehicle{}
+
+			Ω(func() (result interface{}) {
+				defer func() {
+					if r := recover(); r != nil {
+						result = r
+					}
+				}()
+
+				Â(v).Call("Range").Return("fourty two")
+				result = v.Range()
+
+				return result
+			}()).Should(ContainSubstring("return type mismatch"))
+		})
+
+		It("detects return value mismatch", func() {
+			v := &fixtures.MockVehicle{}
+
+			Ω(func() (result interface{}) {
+				defer func() {
+					if r := recover(); r != nil {
+						result = r
+					}
+				}()
+
+				Â(v).Call("Range").Return(42, 422)
+				result = v.Range()
+
+				return result
+			}()).Should(ContainSubstring("return value mismatch"))
+		})
+	})
 })
 
 func TestMongoose(t *testing.T) {

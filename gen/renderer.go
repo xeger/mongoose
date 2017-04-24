@@ -52,13 +52,22 @@ type itemContext struct {
 	Interface *parse.Interface
 }
 
-const templateHeader = `
-package {{.Package.Name}}
+const templateHeader = `package {{.Package.Name}}
 
 import ({{range $nick, $pkg := .Resolver.Imports}}
 	{{$nick}} "{{$pkg}}"{{end}}
 )
 `
+
+// newTemplateRenderer initializes a renderer, its Resolver, and its Header.
+// Other fields must be initialized by the caller before rendering.
+func newTemplateRenderer() *templateRenderer {
+	tr := &templateRenderer{}
+	tr.Resolver = parse.NewResolver()
+	tr.Header = template.New("templateHeader")
+	tr.Header.Parse(templateHeader)
+	return tr
+}
 
 func (tr *templateRenderer) Render(pkg *parse.Package, intfs []parse.Interface) (string, error) {
 	out := bytes.Buffer{}
