@@ -171,7 +171,7 @@ func main() {
 
 	var dirs []string
 
-	if gopackage := os.Getenv("GOPACKAGE"); gopackage != "" {
+        if len(flag.Args()) == 0 {  // if gopackage := os.Getenv("GOPACKAGE"); gopackage != "" {
 		// go-generate mode: PWD is the one and only package
 		pwd, err := os.Getwd()
 		if err != nil {
