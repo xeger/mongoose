@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"regexp"
 )
 
 // Resolver assigns unique file-local import names ("nicknames") to packages
@@ -47,7 +48,11 @@ func (m mapResolver) Resolve(local, typePath string) string {
 		return typ // basic type; nothing to do!
 	}
 
-	natural := filepath.Base(impPath)
+	raw_natural := filepath.Base(impPath)
+	// Handle import paths that contain disallowed characters such as go-jira, and
+	// ldap.v2
+	re := regexp.MustCompile(`[-_\.]`)
+	natural := re.ReplaceAllString(raw_natural,``)
 	if natural == local {
 		return typ // type exists locally; no dot prefix
 	}
